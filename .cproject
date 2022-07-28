@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+    	
+    <storageModule moduleId="org.eclipse.cdt.core.settings">
+        		
+        <cconfiguration id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.toolchain.var.gcc-10.3.1-arm-none-eabi.1982562964">
+            			
+            <storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.toolchain.var.gcc-10.3.1-arm-none-eabi.1982562964" moduleId="org.eclipse.cdt.core.settings" name="Default">
+                				
+                <externalSettings/>
+                				
+                <extensions>
+                    					
+                    <extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+                    					
+                    <extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+                    					
+                    <extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+                    					
+                    <extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+                    				
+                </extensions>
+                			
+            </storageModule>
+            			
+            <storageModule moduleId="cdtBuildSystem" version="4.0.0">
+                				
+                <configuration buildProperties="" description="" id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.toolchain.var.gcc-10.3.1-arm-none-eabi.1982562964" name="Default" parent="org.eclipse.cdt.build.core.emptycfg">
+                    					
+                    <folderInfo id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.toolchain.var.gcc-10.3.1-arm-none-eabi.1982562964.568476677" name="/" resourcePath="">
+                        						
+                        <toolChain id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.toolchain.var.gcc-10.3.1-arm-none-eabi.128725523" name="GCC 10.3.1 [arm-none-eabi]" superClass="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.toolchain.var.gcc-10.3.1-arm-none-eabi">
+                            							
+                            <targetPlatform id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.toolchain.var.gcc-10.3.1-arm-none-eabi.1982562964.1016038220" name=""/>
+                            							
+                            <builder buildPath="${workspace_loc:/camera_test}/build" enabledIncrementalBuild="false" id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.target.builder.1841017653" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.target.builder"/>
+                            							
+                            <tool id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.c.compiler.var.gcc-10.3.1-arm-none-eabi.464254004" name="GCC C Compiler 10.3.1 [arm-none-eabi]" superClass="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.c.compiler.var.gcc-10.3.1-arm-none-eabi">
+                                								
+                                <inputType id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.c.compiler.input.324534459" superClass="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.c.compiler.input"/>
+                                							
+                            </tool>
+                            							
+                            <tool id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.cpp.compiler.var.gcc-10.3.1-arm-none-eabi.1583242475" name="GCC C++ Compiler 10.3.1 [arm-none-eabi]" superClass="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.cpp.compiler.var.gcc-10.3.1-arm-none-eabi">
+                                								
+                                <inputType id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.c.compiler.input.1137373615" superClass="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.c.compiler.input"/>
+                                								
+                                <inputType id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.cpp.compiler.input.1121136451" superClass="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.cpp.compiler.input"/>
+                                							
+                            </tool>
+                            							
+                            <tool id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.assembler.var.gcc-10.3.1-arm-none-eabi.214317001" name="GCC Assembler 10.3.1 [arm-none-eabi]" superClass="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.assembler.var.gcc-10.3.1-arm-none-eabi">
+                                								
+                                <inputType id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.assembler.input.991634501" superClass="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.assembler.input"/>
+                                							
+                            </tool>
+                            							
+                            <tool id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.c.linker.var.gcc-10.3.1-arm-none-eabi.2008784685" name="GCC C Linker 10.3.1 [arm-none-eabi]" superClass="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.c.linker.var.gcc-10.3.1-arm-none-eabi"/>
+                            							
+                            <tool id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.cpp.linker.var.gcc-10.3.1-arm-none-eabi.1767290839" name="GCC C++ Linker 10.3.1 [arm-none-eabi]" superClass="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.cpp.linker.var.gcc-10.3.1-arm-none-eabi"/>
+                            							
+                            <tool id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.archiver.var.gcc-10.3.1-arm-none-eabi.84119606" name="GCC Archiver 10.3.1 [arm-none-eabi]" superClass="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.archiver.var.gcc-10.3.1-arm-none-eabi"/>
+                            						
+                        </toolChain>
+                        					
+                    </folderInfo>
+                    				
+                </configuration>
+                			
+            </storageModule>
+            			
+            <storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+            		
+        </cconfiguration>
+        	
+    </storageModule>
+    	
+    <storageModule moduleId="cdtBuildSystem" version="4.0.0">
+        		
+        <project id="camera_test.null.1148892146" name="camera_test"/>
+        	
+    </storageModule>
+    	
+    <storageModule moduleId="scannerConfiguration">
+        		
+        <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+        	
+    </storageModule>
+    	
+    <storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+    	
+    <storageModule moduleId="refreshScope" versionNumber="2">
+        		
+        <configuration configurationName="Default">
+            			
+            <resource resourceType="PROJECT" workspacePath="/camera_test"/>
+            		
+        </configuration>
+        	
+    </storageModule>
+    	
+    <storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+    
+</cproject>
