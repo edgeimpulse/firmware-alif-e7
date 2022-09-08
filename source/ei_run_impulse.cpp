@@ -197,6 +197,7 @@ void run_nn_continuous(bool debug)
     }
 
     ei_microphone_inference_end();
+    run_classifier_deinit();
 }
 
 #else

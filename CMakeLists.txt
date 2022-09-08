@@ -208,7 +208,7 @@ if (ETHOS_U_NPU_ENABLED)
 
     USER_OPTION(ETHOS_U_NPU_DRIVER_SRC_PATH
         "Path to Ethos-U55 core driver sources"
-        "${EI_FOLDER}/edge-impulse-sdk/third_party/ethos-core-driver"
+        "${EI_FOLDER}/edge-impulse-sdk/porting/ethos-core-driver"
         PATH
         )
 
