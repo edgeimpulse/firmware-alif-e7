@@ -109,33 +109,14 @@ endfunction()
 function(add_bin_generation_command)
 
     set(multiValueArgs SECTION_PATTERNS OUTPUT_BIN_NAMES)
-    set(oneValueArgs TARGET_NAME OUTPUT_DIR AXF_PATH)
+    set(oneValueArgs TARGET_NAME OUTPUT_BIN_PATH AXF_PATH)
     cmake_parse_arguments(PARSED "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    list(LENGTH PARSED_SECTION_PATTERNS N_SECTION_PATTERNS)
-    list(LENGTH PARSED_OUTPUT_BIN_NAMES N_OUTPUT_BIN_NAMES)
+    message(STATUS "${TRIPLET}-objcopy requested to generate bin file from axf")
 
-    if (NOT ${N_SECTION_PATTERNS} STREQUAL ${N_OUTPUT_BIN_NAMES})
-        message(FATAL_ERROR "Section patterns and the output binary names "
-                "should be of the same length")
-    endif()
-
-    message(STATUS "${TRIPLET}-objcopy requested to generate "
-                   "${N_OUTPUT_BIN_NAMES} bin files.")
-
-    math(EXPR MAX_IDX "${N_SECTION_PATTERNS} - 1")
-
-    foreach(IDX RANGE ${MAX_IDX})
-
-        list(GET PARSED_OUTPUT_BIN_NAMES ${IDX} OUTPUT_BIN_NAME)
-        list(GET PARSED_SECTION_PATTERNS ${IDX} SECTION_PATTERN)
-
-        add_custom_command(TARGET ${PARSED_TARGET_NAME}
-            POST_BUILD
-            COMMAND ${TRIPLET}-objcopy -O binary
-            --only-section ${SECTION_PATTERN} ${PARSED_AXF_PATH}
-            ${PARSED_OUTPUT_DIR}/${OUTPUT_BIN_NAME})
-    endforeach()
+    add_custom_command(TARGET ${PARSED_TARGET_NAME}
+        POST_BUILD
+        COMMAND ${TRIPLET}-objcopy -O binary ${PARSED_AXF_PATH} ${PARSED_OUTPUT_BIN_PATH})
 
 endfunction()
 

@@ -120,13 +120,12 @@ endfunction()
 function(add_bin_generation_command)
 
     set(multiValueArgs SECTION_PATTERNS OUTPUT_BIN_NAMES)
-    set(oneValueArgs TARGET_NAME OUTPUT_DIR AXF_PATH)
+    set(oneValueArgs TARGET_NAME OUTPUT_BIN_PATH AXF_PATH)
     cmake_parse_arguments(PARSED "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     add_custom_command(TARGET ${PARSED_TARGET_NAME}
         POST_BUILD
-        COMMAND fromelf --bin --output=${PARSED_OUTPUT_DIR}/
-        ${PARSED_AXF_PATH})
+        COMMAND fromelf --bin --output=${PARSED_OUTPUT_BIN_PATH} ${PARSED_AXF_PATH})
 
 endfunction()
 

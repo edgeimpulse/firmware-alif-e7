@@ -29,13 +29,13 @@
 
 #include <string.h>
 #include "sensor_aq.h"
-#include "ei_mbedtls_md.h"
+//#include "ei_mbedtls_md.h"
 
 
 #include "edge-impulse-sdk/porting/ei_classifier_porting.h"
 
 typedef struct {
-    mbedtls_md_context_t md_ctx;
+    // mbedtls_md_context_t md_ctx;
     char hmac_key[33];
 } sensor_aq_mbedtls_hs256_ctx_t;
 
