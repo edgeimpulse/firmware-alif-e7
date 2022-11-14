@@ -1,6 +1,6 @@
 {
     "HP_APP": {
-        "binary": "app_gcc.bin",
+        "binary": "app.bin",
         "version" : "1.0.0",
         "loadAddress": "0x08000000",
         "cpu_id": "M55_HP",
