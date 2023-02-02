@@ -33,7 +33,7 @@ Using an Edge Impulse project navigate to the **Deployment** tab. Here you shoul
 
 This repository contains a docker image with the required dependencies for building with gcc:
 ```
-docker build . Dockerfile -t alif-firmware
+docker build -t alif-firmware .
 ```
 
 Build the the firmware with following command:
