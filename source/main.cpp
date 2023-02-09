@@ -106,13 +106,7 @@ int main()
     // Setup Pin-Mux and Pad Control registers
     SetupLEDs();
 
-	for (int i = 0; i < 3; i++) {
-      if (camera_init() != 0) {
-        ei_printf("Failed to initialize Camera, retrying\n");
-      } else {
-          break;
-      }
-  }
+	while (camera_init()!=0);
 
     //setvbuf(stdout, NULL, _IONBF, 0);
     auto at = ATServer::get_instance();

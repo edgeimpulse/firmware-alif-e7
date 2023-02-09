@@ -351,10 +351,12 @@ bool at_get_config(void)
     at_get_snapshot();
     ei_printf("===== Inference ======\n");
     ei_printf("Sensor:           %d\r\n", EI_CLASSIFIER_SENSOR);
-#if EI_CLASSIFIER_OBJECT_DETECTION_CONSTRAINED == 1
-    const char *model_type = "constrained_object_detection";
-#elif EI_CLASSIFIER_OBJECT_DETECTION
-    const char *model_type = "object_detection";
+#if EI_CLASSIFIER_OBJECT_DETECTION
+    #if EI_CLASSIFIER_OBJECT_DETECTION_LAST_LAYER == EI_CLASSIFIER_LAST_LAYER_FOMO
+        const char *model_type = "constrained_object_detection";
+    #else
+        const char *model_type = "object_detection";
+    #endif
 #else
     const char *model_type = "classification";
 #endif

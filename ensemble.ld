@@ -1,22 +1,43 @@
+/******************************************************************************
+ * @file     gcc_arm.ld
+ * @brief    GNU Linker Script for Cortex-M based device (ARMC55)
+ * @version  V1.0.0
+ * @date     30. March 2020
+ ******************************************************************************/
 /*
- * Copyright (c) 2021 Arm Limited. All rights reserved.
+ * Copyright (c) 2009-2020 Arm Limited. All rights reserved.
+ *
  * SPDX-License-Identifier: Apache-2.0
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * Licensed under the Apache License, Version 2.0 (the License); you may
+ * not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
-__STACK_SIZE = 0x00003000;
-__HEAP_SIZE  = 0x00008000;
+/*
+ *-------- <<< Use Configuration Wizard in Context Menu >>> -------------------
+ */
+
+/*--------------------- Stack / Heap Configuration ----------------------------
+  <h> Stack / Heap Configuration
+    <o0> Stack Size (in Bytes) <0x0-0xFFFFFFFF:8>
+    <o1> Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
+  </h>
+  -----------------------------------------------------------------------------*/
+__STACK_SIZE = 4000;
+__HEAP_SIZE  = 30000;
+
+/*
+ *-------------------- <<< end of configuration section >>> -------------------
+ */
 
 MEMORY
 {
@@ -26,11 +47,56 @@ MEMORY
   SRAM1 (rwx) : ORIGIN = 0x08000000, LENGTH = 0x00280000
 }
 
+/* Linker script to place sections and symbol values. Should be used together
+ * with other linker script that defines memory regions FLASH and RAM.
+ * It references following symbols, which must be defined in code:
+ *   Reset_Handler : Entry of reset handler
+ *
+ * It defines following symbols, which code can use without definition:
+ *   __exidx_start
+ *   __exidx_end
+ *   __copy_table_start__
+ *   __copy_table_end__
+ *   __zero_table_start__
+ *   __zero_table_end__
+ *   __etext
+ *   __data_start__
+ *   __preinit_array_start
+ *   __preinit_array_end
+ *   __init_array_start
+ *   __init_array_end
+ *   __fini_array_start
+ *   __fini_array_end
+ *   __data_end__
+ *   __bss_start__
+ *   __bss_end__
+ *   __end__
+ *   end
+ *   __HeapLimit
+ *   __StackLimit
+ *   __StackTop
+ *   __stack
+ */
 ENTRY(Reset_Handler)
 
 SECTIONS
 {
-  .text.at_sram1 :
+  .sram :
+  {
+    /* Put models in SRAM b/c U55 can't use TCM, and M55 doesn't touch it (it's RO) */
+    *(*trained_tflite)
+    *(*tensor_data*)
+    *(*raw_image)
+    *(*rgb_image)
+    *(*mbedtls*)
+    *(*twiddle*)
+
+    /* Uncomment below if model doesn't fit */
+    *(*tensor_arena*)
+
+  } > SRAM1
+  
+  .text :
   {
     KEEP(*(.vectors))
     *(.text*)
@@ -55,57 +121,74 @@ SECTIONS
     *(.rodata*)
 
     KEEP(*(.eh_frame*))
-    . = ALIGN(16);
-  } > SRAM1
+  } > SRAM0
 
+  /*
+   * SG veneers:
+   * All SG veneers are placed in the special output section .gnu.sgstubs. Its start address
+   * must be set, either with the command line option �--section-start� or in a linker script,
+   * to indicate where to place these veneers in memory.
+   */
+/*
+  .gnu.sgstubs :
+  {
+    . = ALIGN(32);
+  } > SRAM1
+*/
   .ARM.extab :
   {
-    . = ALIGN(16);
     *(.ARM.extab* .gnu.linkonce.armextab.*)
-    . = ALIGN(16);
-  } > SRAM1
+  } > SRAM0
 
   __exidx_start = .;
   .ARM.exidx :
   {
-    . = ALIGN(16);
     *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-    . = ALIGN(16);
-  } > SRAM1
+  } > SRAM0
   __exidx_end = .;
 
   .copy.table :
   {
-    . = ALIGN(16);
+    . = ALIGN(4);
     __copy_table_start__ = .;
+    __copy_table_end__ = .; /* WORKAROUND: copy table causing problems.*/
     LONG (__etext)
     LONG (__data_start__)
-    LONG ((__data_end__ - __data_start__)/4)
-    __copy_table_end__ = .;
-    . = ALIGN(16);
-  } > SRAM1
+    LONG (__data_end__ - __data_start__)
+    /* Add each additional data section here */
+/*
+    LONG (__etext2)
+    LONG (__data2_start__)
+    LONG (__data2_end__ - __data2_start__)
+*/
+    /*__copy_table_end__ = .;*/
+  } > SRAM0
 
   .zero.table :
   {
-    . = ALIGN(16);
+    . = ALIGN(4);
     __zero_table_start__ = .;
-    LONG (__bss_start__)
-    LONG ((__bss_end__ - __bss_start__)/4)
-    LONG (__sram0_start__)
-    LONG ((__sram0_end__ - __sram0_start__)/4)
+    /* Add each additional bss section here */
+/*
+    LONG (__bss2_start__)
+    LONG (__bss2_end__ - __bss2_start__)
+*/
     __zero_table_end__ = .;
-    . = ALIGN(16);
-  } > SRAM1
+  } > SRAM0
 
-  . = ALIGN(16);
-  __etext = .;
+  /**
+   * Location counter can end up 2byte aligned with narrow Thumb code but
+   * __etext is assumed by startup code to be the LMA of a section in RAM
+   * which must be 4byte aligned
+   */
+  __etext = ALIGN (4);
 
-  .data.at_dtcm : AT (__etext)
+  .data : AT (__etext)
   {
     __data_start__ = .;
     *(vtable)
     *(.data)
-    *(.data*)
+    *(.data.*)
 
     . = ALIGN(4);
     /* preinit data */
@@ -120,6 +203,7 @@ SECTIONS
     KEEP(*(.init_array))
     PROVIDE_HIDDEN (__init_array_end = .);
 
+
     . = ALIGN(4);
     /* finit data */
     PROVIDE_HIDDEN (__fini_array_start = .);
@@ -128,39 +212,65 @@ SECTIONS
     PROVIDE_HIDDEN (__fini_array_end = .);
 
     KEEP(*(.jcr*))
-
-    . = ALIGN(16);
+    . = ALIGN(4);
+    /* All data end */
     __data_end__ = .;
-  } > DTCM
 
-  . = ALIGN(16);
+  } > SRAM1
 
-  .data.at_sram0 (NOLOAD) :
+  /*
+   * Secondary data section, optional
+   *
+   * Remember to add each additional data section
+   * to the .copy.table above to asure proper
+   * initialization during startup.
+   */
+/*
+  __etext2 = ALIGN (4);
+
+  .data2 : AT (__etext2)
   {
     . = ALIGN(4);
-    __sram0_start__ = .;
-    * (*lcd_image_buf*)
-    * (*tensor_arena*)
-
-
+    __data2_start__ = .;
+    *(.data2)
+    *(.data2.*)
     . = ALIGN(4);
-    __sram0_end__ = .;
-  } > SRAM0
+    __data2_end__ = .;
 
-  .bss (NOLOAD) :
+  } > SRAM1
+*/
+
+  .bss :
   {
     . = ALIGN(4);
     __bss_start__ = .;
     *(.bss)
     *(.bss.*)
     *(COMMON)
-
-
     . = ALIGN(4);
     __bss_end__ = .;
-  } > SRAM0 
+  } > SRAM0
 
-  .heap (NOLOAD) :
+  /*
+   * Secondary bss section, optional
+   *
+   * Remember to add each additional bss section
+   * to the .zero.table above to asure proper
+   * initialization during startup.
+   */
+/*
+  .bss2 :
+  {
+    . = ALIGN(4);
+    __bss2_start__ = .;
+    *(.bss2)
+    *(.bss2.*)
+    . = ALIGN(4);
+    __bss2_end__ = .;
+  } > SRAM0 AT > SRAM0 
+*/
+
+  .heap (COPY) :
   {
     . = ALIGN(8);
     __end__ = .;
@@ -168,9 +278,9 @@ SECTIONS
     . = . + __HEAP_SIZE;
     . = ALIGN(8);
     __HeapLimit = .;
-  } > DTCM 
+  } > DTCM
 
-  .stack (ORIGIN(DTCM) + LENGTH(DTCM) - __STACK_SIZE) (NOLOAD) :
+  .stack (ORIGIN(DTCM) + LENGTH(DTCM) - __STACK_SIZE) (COPY) :
   {
     . = ALIGN(8);
     __StackLimit = .;
@@ -179,4 +289,7 @@ SECTIONS
     __StackTop = .;
   } > DTCM
   PROVIDE(__stack = __StackTop);
+
+  /* Check if data + heap + stack exceeds RAM limit */
+  ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
 }

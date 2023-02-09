@@ -23,6 +23,7 @@
 #define _EI_CLASSIFIER_MODEL_METADATA_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define EI_CLASSIFIER_NONE                       255
 #define EI_CLASSIFIER_UTENSOR                    1
@@ -31,6 +32,9 @@
 #define EI_CLASSIFIER_TFLITE_FULL                4
 #define EI_CLASSIFIER_TENSAIFLOW                 5
 #define EI_CLASSIFIER_TENSORRT                   6
+#define EI_CLASSIFIER_DRPAI                      7
+#define EI_CLASSIFIER_TFLITE_TIDL                8
+#define EI_CLASSIFIER_AKIDA                      9
 
 #define EI_CLASSIFIER_SENSOR_UNKNOWN             -1
 #define EI_CLASSIFIER_SENSOR_MICROPHONE          1
@@ -42,12 +46,13 @@
 
 // These must match the enum values in TensorFlow Lite's "TfLiteType"
 #define EI_CLASSIFIER_DATATYPE_FLOAT32           1
+#define EI_CLASSIFIER_DATATYPE_UINT8             3
 #define EI_CLASSIFIER_DATATYPE_INT8              9
 
 #define EI_CLASSIFIER_PROJECT_ID                 87291
 #define EI_CLASSIFIER_PROJECT_OWNER              "Demo Team"
 #define EI_CLASSIFIER_PROJECT_NAME               "Face detection - FOMO"
-#define EI_CLASSIFIER_PROJECT_DEPLOY_VERSION     73
+#define EI_CLASSIFIER_PROJECT_DEPLOY_VERSION     168
 #define EI_CLASSIFIER_NN_INPUT_FRAME_SIZE        9216
 #define EI_CLASSIFIER_RAW_SAMPLE_COUNT           9216
 #define EI_CLASSIFIER_RAW_SAMPLES_PER_FRAME      1
@@ -55,18 +60,19 @@
 #define EI_CLASSIFIER_INPUT_WIDTH                96
 #define EI_CLASSIFIER_INPUT_HEIGHT               96
 #define EI_CLASSIFIER_INPUT_FRAMES               1
+#define EI_CLASSIFIER_NN_OUTPUT_COUNT            288
 #define EI_CLASSIFIER_INTERVAL_MS                1
 #define EI_CLASSIFIER_LABEL_COUNT                1
 #define EI_CLASSIFIER_HAS_ANOMALY                0
 #define EI_CLASSIFIER_FREQUENCY                  0
-#define EI_CLASSIFIER_USE_QUANTIZED_DSP_BLOCK    0
 #define EI_CLASSIFIER_HAS_MODEL_VARIABLES        1
 
 
 #define EI_CLASSIFIER_OBJECT_DETECTION             1
-#define EI_CLASSIFIER_OBJECT_DETECTION_CONSTRAINED 1
+#define EI_CLASSIFIER_OBJECT_DETECTION_LAST_LAYER  EI_CLASSIFIER_LAST_LAYER_FOMO
+#warning 'EI_CLASSFIER_OBJECT_DETECTION_COUNT' is used for the guaranteed minimum number of objects detected. To get all objects during inference use 'bounding_boxes_count' from the 'ei_impulse_result_t' struct instead.
 #define EI_CLASSIFIER_OBJECT_DETECTION_COUNT       10
-#define EI_CLASSIFIER_OBJECT_DETECTION_THRESHOLD   0.4
+#define EI_CLASSIFIER_OBJECT_DETECTION_THRESHOLD   0.5
 #define EI_CLASSIFIER_TFLITE_OUTPUT_DATA_TENSOR    0
 #define EI_CLASSIFIER_TFLITE_OUTPUT_LABELS_TENSOR  1
 #define EI_CLASSIFIER_TFLITE_OUTPUT_SCORE_TENSOR   2
@@ -81,11 +87,7 @@
 #define EI_CLASSIFIER_TFLITE_OUTPUT_SCALE           0.00390625
 #define EI_CLASSIFIER_TFLITE_OUTPUT_ZEROPOINT       -128
 
-
-
 #define EI_CLASSIFIER_INFERENCING_ENGINE            EI_CLASSIFIER_TFLITE
-
-
 #define EI_CLASSIFIER_COMPILED                      1
 #define EI_CLASSIFIER_HAS_TFLITE_OPS_RESOLVER       0
 
@@ -108,17 +110,23 @@
 #endif // EI_CLASSIFIER_SLICES_PER_MODEL_WINDOW
 #define EI_CLASSIFIER_SLICE_SIZE                 (EI_CLASSIFIER_RAW_SAMPLE_COUNT / EI_CLASSIFIER_SLICES_PER_MODEL_WINDOW)
 
-#if EI_CLASSIFIER_INFERENCING_ENGINE == EI_CLASSIFIER_TFLITE && EI_CLASSIFIER_USE_FULL_TFLITE == 1
+#if ((EI_CLASSIFIER_INFERENCING_ENGINE == EI_CLASSIFIER_TFLITE) ||      (EI_CLASSIFIER_INFERENCING_ENGINE == EI_CLASSIFIER_DRPAI)) &&      EI_CLASSIFIER_USE_FULL_TFLITE == 1
+
+#if EI_CLASSIFIER_INFERENCING_ENGINE == EI_CLASSIFIER_TFLITE
 #undef EI_CLASSIFIER_INFERENCING_ENGINE
-#undef EI_CLASSIFIER_HAS_TFLITE_OPS_RESOLVER
 #define EI_CLASSIFIER_INFERENCING_ENGINE          EI_CLASSIFIER_TFLITE_FULL
+#endif
+
+#undef EI_CLASSIFIER_HAS_TFLITE_OPS_RESOLVER
 #define EI_CLASSIFIER_HAS_TFLITE_OPS_RESOLVER     0
+
 #if EI_CLASSIFIER_COMPILED == 1
 #error "Cannot use full TensorFlow Lite with EON"
 #endif
-#endif // EI_CLASSIFIER_INFERENCING_ENGINE == EI_CLASSIFIER_TFLITE && EI_CLASSIFIER_USE_FULL_TFLITE == 1
+#endif // ((EI_CLASSIFIER_INFERENCING_ENGINE == EI_CLASSIFIER_TFLITE) || (EI_CLASSIFIER_INFERENCING_ENGINE == EI_CLASSIFIER_DRPAI)) && EI_CLASSIFIER_USE_FULL_TFLITE == 1
 
 typedef struct {
+    uint32_t block_id;
     uint16_t implementation_version;
     int axes;
     float scale_axes;
@@ -132,12 +140,14 @@ typedef struct {
 } ei_dsp_config_flatten_t;
 
 typedef struct {
+    uint32_t block_id;
     uint16_t implementation_version;
     int axes;
     const char * channels;
 } ei_dsp_config_image_t;
 
 typedef struct {
+    uint32_t block_id;
     uint16_t implementation_version;
     int axes;
     int num_cepstral;
@@ -153,6 +163,7 @@ typedef struct {
 } ei_dsp_config_mfcc_t;
 
 typedef struct {
+    uint32_t block_id;
     uint16_t implementation_version;
     int axes;
     float frame_length;
@@ -166,27 +177,33 @@ typedef struct {
 } ei_dsp_config_mfe_t;
 
 typedef struct {
+    uint32_t block_id;
     uint16_t implementation_version;
     int axes;
     float scale_axes;
 } ei_dsp_config_raw_t;
 
 typedef struct {
+    uint32_t block_id;
     uint16_t implementation_version;
     int axes;
     float scale_axes;
     const char * filter_type;
     float filter_cutoff;
     int filter_order;
+    const char * analysis_type;
     int fft_length;
     int spectral_peaks_count;
     float spectral_peaks_threshold;
     const char * spectral_power_edges;
     bool do_log;
     bool do_fft_overlap;
+    int wavelet_level;
+    const char * wavelet;
 } ei_dsp_config_spectral_analysis_t;
 
 typedef struct {
+    uint32_t block_id;
     uint16_t implementation_version;
     int axes;
     float frame_length;
@@ -197,6 +214,7 @@ typedef struct {
 } ei_dsp_config_spectrogram_t;
 
 typedef struct {
+    uint32_t block_id;
     uint16_t implementation_version;
     int axes;
     float frame_length;
@@ -206,9 +224,11 @@ typedef struct {
     int low_frequency;
     int high_frequency;
     float pre_cof;
+    const char * extractor;
 } ei_dsp_config_audio_syntiant_t;
 
 typedef struct {
+    uint32_t block_id;
     uint16_t implementation_version;
     int axes;
     bool scaling;

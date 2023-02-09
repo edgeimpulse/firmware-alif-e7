@@ -24,8 +24,6 @@
 #include "firmware-sdk-alif/ei_camera_interface.h"
 #include "edge-impulse-sdk/dsp/image/processing.hpp"
 #include "image_processing.h"
-#include <cstring>
-
 
 /* Image buffers */
 static uint8_t raw_image[CIMAGE_X*CIMAGE_Y*RGB_BYTES + 0x460];
@@ -49,7 +47,7 @@ class EiCameraAlif : public EiCamera
             96// int dstHeight
         );
         white_balance(rgb_image, image);
-        //memcpy(image, rgb_image, image_size);
+        // memcpy(image, rgb_image, image_size);
         return true;
     }
 

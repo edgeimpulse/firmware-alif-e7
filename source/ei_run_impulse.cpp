@@ -72,7 +72,7 @@ void run_nn(bool debug) {
     ei_printf("\tNo. of classes: %d\n", sizeof(ei_classifier_inferencing_categories) / sizeof(ei_classifier_inferencing_categories[0]));
 
     if(ei_microphone_inference_start(EI_CLASSIFIER_RAW_SAMPLE_COUNT, (float)EI_CLASSIFIER_INTERVAL_MS) == false) {
-        ei_printf("ERR: Failed to setup audio sampling\r\n");
+        ei_printf("ERR: Could not allocate audio buffer (size %d), this could be due to the window length of your model\r\n", EI_CLASSIFIER_RAW_SAMPLE_COUNT);
         return;
     }
 
@@ -103,12 +103,11 @@ void run_nn(bool debug) {
         }
 
         // print the predictions
-        ei_printf("Predictions (DSP: %lld us., Classification: %lld us., Anomaly: %lld us.): \n",
-                  result.timing.dsp_us, result.timing.classification_us, result.timing.anomaly_us);
+        ei_printf("Predictions (DSP: %d ms., Classification: %d ms., Anomaly: %d ms.): \n",
+                  result.timing.dsp, result.timing.classification, result.timing.anomaly);
         for (size_t ix = 0; ix < EI_CLASSIFIER_LABEL_COUNT; ix++) {
             ei_printf("    %s: \t%f\r\n", result.classification[ix].label, result.classification[ix].value);
         }
-
 #if EI_CLASSIFIER_HAS_ANOMALY == 1
         ei_printf("    anomaly score: %f\r\n", result.anomaly);
 #endif
@@ -175,8 +174,8 @@ void run_nn_continuous(bool debug)
 
         if (++print_results >= (EI_CLASSIFIER_SLICES_PER_MODEL_WINDOW >> 1)) {
             // print the predictions
-            ei_printf("Predictions (DSP: %lld us., Classification: %lld us., Anomaly: %lld us.): \n",
-                result.timing.dsp_us, result.timing.classification_us, result.timing.anomaly_us);
+            ei_printf("Predictions (DSP: %d ms., Classification: %d ms., Anomaly: %d ms.): \n",
+                result.timing.dsp, result.timing.classification, result.timing.anomaly);
             for (size_t ix = 0; ix < EI_CLASSIFIER_LABEL_COUNT; ix++) {
                 ei_printf("    %s: \t", result.classification[ix].label);
                 ei_printf_float(result.classification[ix].value);
