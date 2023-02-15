@@ -33,7 +33,7 @@ Using an Edge Impulse project navigate to the **Deployment** tab. Here you shoul
 
 This repository contains a docker image with the required dependencies for building with gcc:
 ```
-docker build . Dockerfile -t alif-firmware
+docker build -t alif-firmware .
 ```
 
 Build the the firmware with following command:
@@ -61,12 +61,12 @@ make -j8
 ### Flash your device
 0. Ensure your board is configured for programming over the SEUART interface by following the [Edge Impulse Ensemble E7 setup guide](https://docs.edgeimpulse.com/docs/development-platforms/officially-supported-mcu-targets/alif-ensemble-e7#connecting-to-edge-impulse)
 1. Copy `./build/bin/app.bin` into the Alif Security Toolkit directory `./app-release/build/images`
-2. Copy the `app-cfg-gcc.json` file into the Alif Security Toolkit directory `./app-release/build/config`
+2. Copy the `ei-app-gcc.json` file into the Alif Security Toolkit directory `./app-release/build/config`
 3. Execute the following commands to program your board:
 
 ```
 cd app-release
-./app-gen-toc -f ./build/config/app-cfg-gcc.json
+./app-gen-toc -f ./build/config/ei-app-gcc.json
 ./app-write-mram.py -d
 ```
 
