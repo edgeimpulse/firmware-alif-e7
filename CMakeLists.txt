@@ -68,8 +68,8 @@ add_platform_build_configuration(TARGET_PLATFORM ${TARGET_PLATFORM})
 
 set_platform_global_defaults()
 
-message(STATUS "Platform: Ensemble platform with minimal peripherals")
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_TOOLCHAIN_DIR}/bare-metal-gcc.cmake)
+message(STATUS "Using CMAKE_TOOLCHAIN_FILE: ${CMAKE_TOOLCHAIN_FILE}")
 
 assert_defined(LOG_LEVEL)
 assert_defined(TARGET_PLATFORM)
@@ -107,6 +107,7 @@ add_subdirectory(${ALIF_REPO_DIR}/source/hal ${CMAKE_BINARY_DIR}/source/hal EXCL
 # Add application sources & executable target
 set(TARGET_NAME "app")
 add_executable(${TARGET_NAME})
+
 # Include directories:
 set(APPLICATION_INCLUDE_DIRS
     "${SRC_PATH}/firmware-copies"
@@ -121,8 +122,11 @@ add_subdirectory("${SRC_PATH}/firmware-sdk-alif")
 
 file(GLOB_RECURSE SRC_UTIL
     "${SRC_PATH}/firmware-copies/*.c"
+    "${SRC_PATH}/firmware-copies/*.cpp"
     "${SRC_PATH}/QCBOR/*.c"
+    "${SRC_PATH}/QCBOR/*.cpp"
     "${SRC_PATH}/mbedtls_hmac_sha256_sw/mbedtls/src/*.c"
+    "${SRC_PATH}/mbedtls_hmac_sha256_sw/mbedtls/src/*.cpp"
     )
 
 set(SRC_MAIN "${SRC_PATH}/main.cpp")
@@ -135,6 +139,10 @@ list(APPEND SRC_MAIN "${SRC_PATH}/ei_classifier_porting.cpp")
 
 get_target_property(C_FILES app SOURCES)
 set_target_properties(app PROPERTIES SOURCES "${C_FILES}")
+
+set_source_files_properties(${SRC_MAIN}
+    PROPERTIES COMPILE_DEFINITIONS
+    "PRJ_VER_STR=\"${PROJECT_VERSION}\";PRJ_DES_STR=\"${PROJECT_DESCRIPTION}\"")
 
 target_sources(${TARGET_NAME} PUBLIC ${SRC_MAIN} ${SRC_UTIL})
 target_include_directories(${TARGET_NAME} PRIVATE ${APPLICATION_INCLUDE_DIRS})

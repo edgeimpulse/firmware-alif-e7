@@ -29,13 +29,17 @@
 #include "firmware-sdk-alif/ei_image_lib.h"
 #include "ei_microphone.h"
 #include "ei_run_impulse.h"
+#include "delay.h"
 
 #include <cstdio>
 
 /* Project Includes */
+#include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <cstdio>
+#include "log_macros.h"
 
 #if !NDEBUG
 extern "C" void __stack_chk_fail(void)
@@ -53,9 +57,12 @@ extern "C" int Init_SysTick(void);
 
 int main()
 {
-    Init_SysTick();
-
     hal_platform_init();
+    info("ei init begins\r\n");
+    printf("printf test.\r\n");
+    ei_printf("ei_printf test.\r\n");
+
+    sleep_or_wait_msec(10);
 
     auto at = ATServer::get_instance();
 
@@ -78,18 +85,20 @@ int main()
 
     ei_microphone_init();
 
+
+    char c[1024];
+
     while (1)
     {
         // blocking call
-        char data = getchar();
-        if (data != 0xFF)
+        bool success = hal_get_user_input(c, 256);
+        if (success)
         {
-            at->handle(data);
+            ei_printf("\r\nrecv\r\n");
         }
         else
         {
-            ei_printf("UART read error\n");
-            break;
+            ei_printf("UART read error\r\n");
         }
     }
 }
