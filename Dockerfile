@@ -6,11 +6,13 @@ WORKDIR /app
 
 RUN apt update && apt install -y wget make cmake
 
-# GCC ARM
+# GCC ARM 10.3.1
+# x86 url https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2
+# aarch64 url https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-aarch64-linux.tar.bz2
 RUN mkdir -p /opt/gcc && \
     cd /opt/gcc && \
-    wget https://developer.arm.com/-/media/Files/downloads/gnu-rm/10-2020q4/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2 && \
-    tar xjf gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2 && \
+    wget https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2 && \
+    tar xjf gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2 && \
     rm -rf /opt/gcc/*.tar.bz2
 
-ENV PATH="/opt/gcc/gcc-arm-none-eabi-10-2020-q4-major/bin:${PATH}"
+ENV PATH="/opt/gcc/gcc-arm-none-eabi-10.3-2021.10/bin:${PATH}"

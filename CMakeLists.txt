@@ -107,16 +107,37 @@ add_subdirectory(${ALIF_REPO_DIR}/source/hal ${CMAKE_BINARY_DIR}/source/hal EXCL
 # Add application sources & executable target
 set(TARGET_NAME "app")
 add_executable(${TARGET_NAME})
+# Include directories:
+set(APPLICATION_INCLUDE_DIRS
+    "${SRC_PATH}/firmware-copies"
+    "${SRC_PATH}/QCBOR/inc"
+    "${SRC_PATH}/mbedtls_hmac_sha256_sw" 
+    "${SRC_PATH}/model-parameters"
+    "${SRC_PATH}/tflite-model"
+    )
+
 add_subdirectory("${SRC_PATH}")
+add_subdirectory("${SRC_PATH}/firmware-sdk-alif")
+
+file(GLOB_RECURSE SRC_UTIL
+    "${SRC_PATH}/firmware-copies/*.c"
+    "${SRC_PATH}/QCBOR/*.c"
+    "${SRC_PATH}/mbedtls_hmac_sha256_sw/mbedtls/src/*.c"
+    )
+
 set(SRC_MAIN "${SRC_PATH}/main.cpp")
+list(APPEND SRC_MAIN "${SRC_PATH}/ei_classifier_porting.cpp")
+list(APPEND SRC_MAIN "${SRC_PATH}/ei_microphone.cpp")
+list(APPEND SRC_MAIN "${SRC_PATH}/ei_camera.cpp")
+list(APPEND SRC_MAIN "${SRC_PATH}/ei_run_impulse.cpp")
+list(APPEND SRC_MAIN "${SRC_PATH}/ei_device_alif_e7.cpp")
+list(APPEND SRC_MAIN "${SRC_PATH}/ei_classifier_porting.cpp")
 
 get_target_property(C_FILES app SOURCES)
 set_target_properties(app PROPERTIES SOURCES "${C_FILES}")
-list(APPEND SRC_MAIN "${SRC_PATH}/ei_classifier_porting.cpp")
 
-target_sources(${TARGET_NAME} PUBLIC ${SRC_MAIN})
-
-# target_include_directories(${TARGET_NAME} PRIVATE )
+target_sources(${TARGET_NAME} PUBLIC ${SRC_MAIN} ${SRC_UTIL})
+target_include_directories(${TARGET_NAME} PRIVATE ${APPLICATION_INCLUDE_DIRS})
 
 target_compile_options(${TARGET_NAME} PUBLIC -Wno-unused-parameter -Wno-missing-field-initializers)
 

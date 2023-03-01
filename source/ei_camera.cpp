@@ -24,32 +24,34 @@
 #include "firmware-sdk-alif/ei_camera_interface.h"
 #include "edge-impulse-sdk/dsp/image/processing.hpp"
 #include "image_processing.h"
+#include "hal.h"
+#include "hal_image.h"
+#include "delay.h"
 #include <cstring>
 
 
-/* Image buffers */
-static uint8_t raw_image[CIMAGE_X*CIMAGE_Y*RGB_BYTES + 0x460];
-static uint8_t rgb_image[CIMAGE_X*CIMAGE_Y*RGB_BYTES];
-
 class EiCameraAlif : public EiCamera
 {
+
+    virtual bool init(uint16_t width, uint16_t height) override
+    {
+        int err = hal_image_init();
+        if (0 != err) {
+            ei_printf("ERROR: hal_image_init failed with error: %d\n", err);
+            return false;
+        }
+        return true;
+    }
+
     virtual bool ei_camera_capture_rgb888_packed_big_endian(
         uint8_t *image,
         uint32_t image_size) override
     {
-        while(camera_start(CAMERA_MODE_SNAPSHOT, raw_image) != 0);
-        camera_vsync(100); // RGB conversion and frame resize 
-        bayer_to_RGB(raw_image+0x460, rgb_image);
-        ei::image::processing::crop_and_interpolate_rgb888(
-            rgb_image,// const uint8_t *srcImage,
-            560,// int srcWidth,
-            560,// int srcHeight,
-            rgb_image,// uint8_t *dstImage,
-            96,// int dstWidth,
-            96// int dstHeight
-        );
-        white_balance(rgb_image, image);
-        //memcpy(image, rgb_image, image_size);
+        const uint8_t *image_data = hal_get_image_data(this->current_resolution.width, this->current_resolution.height);
+        if (!image_data) {
+            ei_printf("ERROR: hal_get_image_data failed");
+            return false;
+        }
         return true;
     }
 
@@ -64,7 +66,7 @@ class EiCameraAlif : public EiCamera
     {
 
         static ei_device_snapshot_resolutions_t snapshot_resolutions[] =
-            { { 96,96 } };
+            { { 96,96 }, { 160,160 }, {320,320}, {480, 480} };
 
         *res = snapshot_resolutions;
         *res_num = ARRAY_LENGTH(snapshot_resolutions);
@@ -77,8 +79,12 @@ class EiCameraAlif : public EiCamera
 
     virtual bool set_resolution(const ei_device_snapshot_resolutions_t res) override
     {
+        this->current_resolution = res;
         return true;
     }
+
+    private:
+        ei_device_snapshot_resolutions_t current_resolution;
 };
 
 EiCamera* EiCamera::get_camera()
