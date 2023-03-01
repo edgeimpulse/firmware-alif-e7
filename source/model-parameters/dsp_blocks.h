@@ -27,14 +27,18 @@
 #include "edge-impulse-sdk/classifier/ei_run_dsp.h"
 #include "edge-impulse-sdk/classifier/ei_model_types.h"
 
+// forward declaration (implemented by the inferencing engines)
+int extract_tflite_eon_features(signal_t *signal, matrix_t *output_matrix, void *config_ptr, const float frequency);
+int extract_tflite_features(signal_t *signal, matrix_t *output_matrix, void *config_ptr, const float frequency);
+
 const size_t ei_dsp_blocks_size = 1;
 ei_model_dsp_t ei_dsp_blocks[ei_dsp_blocks_size] = {
-    { // DSP block 3
+    { // DSP block 17
         9216,
         &extract_image_features,
-        (void*)&ei_dsp_config_3,
-        ei_dsp_config_3_axes,
-        ei_dsp_config_3_axes_size
+        (void*)&ei_dsp_config_17,
+        ei_dsp_config_17_axes,
+        ei_dsp_config_17_axes_size
     }
 };
 
