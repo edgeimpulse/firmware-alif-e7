@@ -1,0 +1,19 @@
+{
+    "__comment__": [
+        "'host' is the Linux physical address accessible from /dev/mem.",
+        "'device' is the corresponding device address.",
+        "'size' is the size in bytes of the memory region."
+    ],
+    "memoryMap": [
+        {
+            "host": "0x6cf00000",
+            "device": "0x00000000",
+            "size": "0x00400000"
+        },
+        {
+            "host": "0x84000000",
+            "device": "0x64000000",
+            "size": "0x01000000"
+        }
+    ]
+}

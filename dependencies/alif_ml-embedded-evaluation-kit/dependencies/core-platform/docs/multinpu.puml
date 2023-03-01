@@ -1,0 +1,82 @@
+@startuml
+
+skinparam backgroundColor #EEEBDC
+
+box "Application" #00C1DE
+participant "main()" as app
+end box
+
+box "Tensorflow" #FF6B00
+participant "TFLu" as tflu
+participant "Ethos-U custom op" as custom
+end box
+
+box "Ethos-U driver" #95D600
+participant "Driver" as driver
+end box
+
+box "Hardware" #FFC700
+participant "Cortex-M" as cortexm
+participant "Ethos-U" as ethosu
+end box
+
+app -> tflu++: Invoke()
+    tflu -> custom++: Eval()
+        custom -> driver++: ethosu_reserve_driver()
+            loop Find and reserve driver
+                driver -> app++: ethosu_mutex_lock()
+                return
+
+                driver -> driver: ethosu_find_and_reserve_driver()
+
+                driver -> app++: ethosu_mutex_unlock()
+                return
+
+                alt Found free driver
+                    note over driver
+                        Return free driver
+                    end note
+                else No driver available
+                    driver -> app++: ethosu_semaphore_take()
+                        note over app
+                            Block on semaphore
+                        end note
+                    return
+                end
+            end loop
+        return
+
+        custom -> driver++: ethosu_invoke()
+            driver -\\ ethosu: Configure NPU and trigger inference
+
+            driver -> driver++: wait_for_irq()
+                note over driver
+                    Driver sleeping waiting for IRQ
+                end note
+
+                ethosu -\\ cortexm: IRQ
+                cortexm -\\ driver: ethosu_irq_handler()
+
+                note over driver
+                    Driver woken up by IRQ handler
+                end note
+            return
+        return
+
+        custom -> driver++: ethosu_release_driver()
+            driver -> app++: ethosu_mutex_lock()
+            return
+
+            driver -> app++: ethosu_semaphore_give()
+                note over app
+                    Wake up threads blocking on the semaphore
+                end note
+            return
+
+            driver -> app++: ethosu_mutex_unlock()
+            return
+        return
+    return
+return
+
+@enduml

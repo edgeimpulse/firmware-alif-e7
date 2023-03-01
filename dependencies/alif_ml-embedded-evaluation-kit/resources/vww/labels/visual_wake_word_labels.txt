@@ -1,0 +1,2 @@
+Person detected: No
+Person detected: Yes

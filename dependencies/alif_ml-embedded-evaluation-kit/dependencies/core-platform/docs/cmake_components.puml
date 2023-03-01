@@ -1,0 +1,29 @@
+@startuml
+
+skinparam {
+    BackgroundColor #EEEBDC
+    DefaultFontColor white
+}
+
+package "demo/targets/<your target>" #002B49 {
+    package "core_platform/targets/common" #0091BD {
+        package "core_software" #00C1DE {
+            package "core_driver" #7D868C {}
+            package "cmsis" #7D868C {}
+            package "tflite_micro" #7D868C {}
+            package "rtos" #7D868C {}
+        }
+
+        package "core_platform/drivers" #00C1DE {}
+    }
+
+    package "core_platform/applications" #0091BD {}
+    package "demo/applications" #0091BD {}
+    package "demo/drivers" #0091BD {}
+}
+
+"core_platform/applications" -[hidden]> "demo/applications"
+"core_platform/applications" -[hidden]> "demo/drivers"
+"core_platform/targets/common" --[hidden]> "core_platform/applications"
+
+@enduml
