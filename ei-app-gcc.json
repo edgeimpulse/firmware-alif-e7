@@ -1,0 +1,10 @@
+{
+    "HP_APP": {
+        "binary": "mram.bin",
+        "version" : "1.0.0",
+        "mramAddress": "0x80001000",
+        "cpu_id": "M55_HP",
+        "flags": ["boot"],
+        "signed": false
+    }
+}
