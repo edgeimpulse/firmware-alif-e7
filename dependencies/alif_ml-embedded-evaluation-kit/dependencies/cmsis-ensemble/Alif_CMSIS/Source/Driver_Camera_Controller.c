@@ -779,6 +779,7 @@ static int32_t CAMERAx_Initialize(CAMERA_CTRL_DEV                     *cam_ctrl,
 
   /* Call Camera Sensor specific init */
   ret = cam_sensor->Ops->Init(cam_resolution);
+//   DEBUG_PRINTF("Camera sensor init: %d\r\n", ret);
   if(ret != ARM_DRIVER_OK)
     return ret;
 

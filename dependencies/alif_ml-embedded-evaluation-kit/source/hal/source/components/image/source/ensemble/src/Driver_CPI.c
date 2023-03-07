@@ -12,6 +12,7 @@
 #include "RTE_Components.h"
 #include "RTE_Device.h"
 #include "global_map.h"
+#include "base_def.h"
 
 /* Project Includes */
 #include "Driver_CPI.h"
@@ -165,11 +166,12 @@ int32_t camera_init(uint8_t* buffer)
     if (res != ARM_DRIVER_OK) {
         return res;
     }
+    DEBUG_PRINTF("HW INIT OK\r\n");
     //////////////////////////////////////////////////////////////////////////////
     // Camera initialization
     //////////////////////////////////////////////////////////////////////////////
     res = camera->Initialize(CAMERA_RESOLUTION_560x560, CameraEventHandler);
-
+    DEBUG_PRINTF("Camera init: return %d\r\n", res);
     if (res != ARM_DRIVER_OK) {
         return res;
     }

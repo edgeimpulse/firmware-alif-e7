@@ -87,6 +87,11 @@ int main()
 
     ei_microphone_init();
 
+    int err = hal_image_init();
+    if (0 != err) {
+        ei_printf("hal_image_init failed with error: %d\n", err);
+    }
+
     while (1)
     {
         // blocking call

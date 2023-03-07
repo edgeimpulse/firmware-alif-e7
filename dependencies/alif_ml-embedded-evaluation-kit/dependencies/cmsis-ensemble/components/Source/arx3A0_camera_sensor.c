@@ -198,7 +198,7 @@ static int32_t ARX3A0_Camera_Soft_Reseten(void)
 	/* @Observation: more delay is required for Camera Sensor
 	 *               to setup after Soft Reset.
 	 */
-	ARX3A0_DELAY_uSEC(1000);
+	ARX3A0_DELAY_uSEC(100000);
 
 	return ARM_DRIVER_OK;
 }
@@ -267,16 +267,19 @@ int32_t ARX3A0_Init(ARM_CAMERA_RESOLUTION cam_resolution)
 	 */
 
 	ret = camera_sensor_i2c_init(&arx3A0_camera_sensor_i2c_cnfg);
+    printf("Cam I2c init %d\r\n", ret);
 	if(ret != ARM_DRIVER_OK)
 		return ARM_DRIVER_ERROR;
 
 	/* Soft Reset ARX3A0 Camera Sensor */
 	ret = ARX3A0_Camera_Soft_Reseten();
+    printf("Cam soft reset %d\r\n", ret);
 	if(ret != ARM_DRIVER_OK)
 		return ARM_DRIVER_ERROR;
 
 	/* Read ARX3A0 Camera Sensor CHIP ID */
 	ret = ARX3A0_READ_REG(ARX3A0_CHIP_ID_REGISTER, &rcv_data, 2);
+    printf("Cam chip id %d %X\r\n", ret, rcv_data);
 	if(ret != ARM_DRIVER_OK)
 		return ARM_DRIVER_ERROR;
 

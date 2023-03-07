@@ -1,7 +1,7 @@
 #ifndef __BASE_DEF_H__
 #define __BASE_DEF_H__
 
-#define ENABLE_PRINTF      0
+#define ENABLE_PRINTF      1
 #if ENABLE_PRINTF
 #define    DEBUG_PRINTF(f,...)    printf(f,##__VA_ARGS__)
 #else
