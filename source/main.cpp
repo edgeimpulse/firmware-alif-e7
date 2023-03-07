@@ -55,6 +55,8 @@ void *__stack_chk_guard = (void *)0xaeaeaeae;
 extern "C" void ei_sleep_c(int32_t time_ms) { ei_sleep( time_ms ); }
 extern "C" int Init_SysTick(void);
 
+extern "C" unsigned char UartGetc(void);
+
 int main()
 {
     hal_platform_init();
@@ -85,20 +87,18 @@ int main()
 
     ei_microphone_init();
 
-
-    char c[1024];
-
     while (1)
     {
         // blocking call
-        bool success = hal_get_user_input(c, 256);
-        if (success)
+        char data = UartGetc();
+        if (data != 0xFF)
         {
-            ei_printf("\r\nrecv\r\n");
+            at->handle(data);
         }
         else
         {
-            ei_printf("UART read error\r\n");
+            ei_printf("UART read error\n");
+            break;
         }
     }
 }

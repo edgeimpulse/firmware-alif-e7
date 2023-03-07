@@ -80,10 +80,15 @@ static int hardware_init(void)
 #if CONSOLE_UART == 2
     /* PINMUX UART2_A */
 
+    /* Configure GPIO Pin : P1_10 as UART2_RX_A */
+    ret = PINMUX_Config (PORT_NUMBER_1, PIN_NUMBER_10, PINMUX_ALTERNATE_FUNCTION_1);
+    if(ret != ARM_DRIVER_OK) {
+        return -1;
+    }
+
     /* Configure GPIO Pin : P1_11 as UART2_TX_A */
     ret = PINMUX_Config (PORT_NUMBER_1, PIN_NUMBER_11, PINMUX_ALTERNATE_FUNCTION_1);
-    if(ret != ARM_DRIVER_OK)
-    {
+    if(ret != ARM_DRIVER_OK) {
         return -1;
     }
 #elif CONSOLE_UART == 4
@@ -262,14 +267,12 @@ unsigned char UartGetc(void)
     if (initialized) {
         USARTdrv->Receive(&c, 1);
     }
+
     /* We'll just loop for ever if not initialized or anything goes wrong */
-    while (!uart_event) {
+    while (!(uart_event & ARM_USART_EVENT_RECEIVE_COMPLETE)) {
         __WFE();
     }
 
-    if (c == '\r') {
-        c = '\n';
-    }
     return c;
 }
 
