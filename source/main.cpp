@@ -59,6 +59,7 @@ extern "C" unsigned char UartGetc(void);
 
 int main()
 {
+    init_trigger_rx();
     hal_platform_init();
     info("ei init begins\r\n");
     printf("printf test.\r\n");
