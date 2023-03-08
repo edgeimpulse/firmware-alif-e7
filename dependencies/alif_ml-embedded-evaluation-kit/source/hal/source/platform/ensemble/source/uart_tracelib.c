@@ -276,6 +276,22 @@ unsigned char UartGetc(void)
     return c;
 }
 
+unsigned char UartGetcNoBlock(void)
+{
+	static uint8_t buf[1];
+
+    if(USARTdrv->GetRxCount()) {
+		if (USARTdrv->Receive(buf, 1) != ARM_DRIVER_OK)
+		{
+			return (-1);
+		} else {
+			return buf[0];
+		}
+    }
+    else {
+        return -1;
+    }
+}
 
 
 unsigned int GetLine(char *lp, unsigned int len)

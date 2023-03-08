@@ -42,7 +42,7 @@ int image_init()
     return err;
 }
 
-#define FAKE_CAMERA 0
+#define FAKE_CAMERA 1
 
 const uint8_t *get_image_data(int ml_width, int ml_height)
 {

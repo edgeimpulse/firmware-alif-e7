@@ -101,11 +101,11 @@ int main()
         {
             at->handle(data);
         }
-        else
-        {
-            ei_printf("UART read error\n");
-            break;
-        }
+        // else
+        // {
+        //     ei_printf("UART read error\n");
+        //     break;
+        // }
     }
 }
 

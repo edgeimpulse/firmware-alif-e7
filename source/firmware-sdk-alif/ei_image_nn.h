@@ -126,6 +126,7 @@ void EiImageNN::run_nn(bool debug, int delay_ms, bool use_max_baudrate)
     }
 
     while (!ei_user_invoke_stop_lib()) {
+    // while (1) {
         ei::signal_t signal;
         signal.total_length = image_height * image_width; // length of OUTPUT, not input
         signal.get_data = [this](size_t offset, size_t length, float *out_ptr) {
@@ -144,7 +145,7 @@ void EiImageNN::run_nn(bool debug, int delay_ms, bool use_max_baudrate)
         // run the impulse: DSP, neural network and the Anomaly algorithm
         ei_impulse_result_t result = { 0 };
 
-        EI_IMPULSE_ERROR ei_error = run_classifier(&signal, &result, false);
+        EI_IMPULSE_ERROR ei_error = run_classifier(&signal, &result, debug);
         if (ei_error != EI_IMPULSE_OK) {
             ei_printf("Failed to run impulse (%d)\n", ei_error);
             break;
