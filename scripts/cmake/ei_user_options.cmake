@@ -116,7 +116,7 @@ if (NOT TARGET_PLATFORM STREQUAL native)
     # add EI definition for selecting model based on core
     if (TARGET_SUBSYSTEM STREQUAL RTSS-HP)
         set(EI_CONFIG_ETHOS_U55_256 ON BOOL) 
-    elseif (TARGET_SUBSYSTEM STREQUAL RTSS-HP)
+    elseif (TARGET_SUBSYSTEM STREQUAL RTSS-HE)
         set(EI_CONFIG_ETHOS_U55_128 ON BOOL)
     endif()
 
