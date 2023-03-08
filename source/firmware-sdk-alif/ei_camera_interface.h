@@ -44,7 +44,7 @@ public:
      * @return false If not successful 
      */
     virtual bool ei_camera_capture_rgb888_packed_big_endian(
-        uint8_t *image,
+        uint8_t **image,
         uint32_t image_size) = 0; //pure virtual.  You must provide an implementation
 
     /**

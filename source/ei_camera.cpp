@@ -44,11 +44,11 @@ class EiCameraAlif : public EiCamera
     }
 
     virtual bool ei_camera_capture_rgb888_packed_big_endian(
-        uint8_t *image,
+        uint8_t **image,
         uint32_t image_size) override
     {
-        const uint8_t *image_data = hal_get_image_data(this->current_resolution.width, this->current_resolution.height);
-        if (!image_data) {
+        *image = (uint8_t *) hal_get_image_data(this->current_resolution.width, this->current_resolution.height);
+        if (!image) {
             ei_printf("ERROR: hal_get_image_data failed");
             return false;
         }

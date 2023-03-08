@@ -117,7 +117,7 @@ static bool ei_camera_take_snapshot_encode_and_output_no_init(size_t width, size
     }
     (void)needs_a_resize; //suppress warning
 #else
-    bool isOK = camera->ei_camera_capture_rgb888_packed_big_endian(image, size);
+    bool isOK = camera->ei_camera_capture_rgb888_packed_big_endian(&image, size);
     if (!isOK) {
         return false;
     }

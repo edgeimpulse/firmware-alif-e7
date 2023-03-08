@@ -136,7 +136,7 @@ void EiImageNN::run_nn(bool debug, int delay_ms, bool use_max_baudrate)
         ei_printf("Taking photo...\n");
 
         if (!camera->ei_camera_capture_rgb888_packed_big_endian(
-                image,
+                &image,
                 image_size)) {
             ei_printf("Failed to capture image\r\n");
             break;
