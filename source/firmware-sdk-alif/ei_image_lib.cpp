@@ -202,6 +202,7 @@ extern bool ei_camera_start_snapshot_stream(size_t width, size_t height, bool us
     if (use_max_baudrate) {
         change_to_normal_baud();
     }
+    ei_printf("> ");
 
     return isOK;
 }
