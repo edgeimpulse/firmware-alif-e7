@@ -236,6 +236,11 @@ bool ei_microphone_sample_record_lib(EiMicrophone *mic, EiDeviceMemory *mem)
 
     ei_printf("Sampling...\n");
 
+    /* Dummy read to get rid of the spike at start */
+    microphone_sample_t dummy_buf[512];
+    mic->async_start(dummy_buf, 512);
+    mic->await_samples();
+
     auto samples_required = ei_microphone_get_samples_required();
     for (auto samples_left = samples_required; samples_left > 0;) //decrement inside loop
     {

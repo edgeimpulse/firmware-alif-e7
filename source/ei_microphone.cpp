@@ -31,7 +31,7 @@
 //TODO: use multiply of memory block size
 #define MIC_SAMPLE_SIZE 2048
 
-uint32_t wlen = 16;
+uint32_t wlen = 32;
 uint32_t sampling_rate = 16000;
 microphone_sample_t* mic_sample_buffer = nullptr;
 
@@ -54,6 +54,7 @@ public:
     int async_start(microphone_sample_t *buffer, uint32_t size) override
     {
         this->sample_size = size;
+        this->sample_buffer = buffer;
         hal_get_audio_data(buffer, size);
         return 0;
     }
@@ -65,10 +66,12 @@ public:
             ei_printf("ERROR: hal_get_audio_data failed with error: %d\n", err);
             return 0;
         }
+        hal_audio_preprocessing(this->sample_buffer, this->sample_size);
         return this->sample_size;
     }
 private:
     uint32_t sample_size = 0;
+    microphone_sample_t *sample_buffer = 0;
 };
 
 static EiMicrophoneAlif micAlif;
