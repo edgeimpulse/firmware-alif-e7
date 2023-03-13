@@ -70,7 +70,7 @@ static bool ei_camera_take_snapshot_encode_and_output_no_init(size_t width, size
 
     bool needs_a_resize = false;
 
-    ei_device_snapshot_resolutions_t fb_resoluton;
+    ei_device_snapshot_resolutions_t fb_resolution;
 
     uint16_t final_width = width;
     uint16_t final_height = height;
@@ -80,12 +80,12 @@ static bool ei_camera_take_snapshot_encode_and_output_no_init(size_t width, size
     // check if minimum suitable sensor resolution is the same as 
     // desired snapshot resolution
     // if not we need to resize later
-    fb_resoluton = camera->search_resolution(width, height);
+    fb_resolution = camera->search_resolution(width, height);
 
-    if (width != fb_resoluton.width || height != fb_resoluton.height) {
+    if (width != fb_resolution.width || height != fb_resolution.height) {
         needs_a_resize = true;
-        width = fb_resoluton.width;
-        height = fb_resoluton.height;
+        width = fb_resolution.width;
+        height = fb_resolution.height;
     }
 
     // rgb888 packed, 3B color depth
@@ -117,6 +117,9 @@ static bool ei_camera_take_snapshot_encode_and_output_no_init(size_t width, size
     }
     (void)needs_a_resize; //suppress warning
 #else
+
+    camera->set_resolution(fb_resolution);
+
     bool isOK = camera->ei_camera_capture_rgb888_packed_big_endian(&image, size);
     if (!isOK) {
         return false;
