@@ -1,19 +1,18 @@
 /*
- * Copyright (c) 2019-2022 Arm Limited. All rights reserved.
+ * Copyright (c) 2022 Arm Limited. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS
+ * IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- *
- * Licensed under the Apache License, Version 2.0 (the License); you may
- * not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an AS IS BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 
 #ifndef ETHOSU_DRIVER_H
@@ -23,7 +22,7 @@
  * Includes
  ******************************************************************************/
 
-#include "ethosu_types.h"
+#include "ethosu_device.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -34,56 +33,54 @@ extern "C" {
 #endif
 
 /******************************************************************************
- * Defines
- ******************************************************************************/
-
-#define ETHOSU_DRIVER_VERSION_MAJOR 0  ///< Driver major version
-#define ETHOSU_DRIVER_VERSION_MINOR 16 ///< Driver minor version
-#define ETHOSU_DRIVER_VERSION_PATCH 0  ///< Driver patch version
-
-/******************************************************************************
  * Types
  ******************************************************************************/
 
-// Forward declare
-struct ethosu_device;
-
-enum ethosu_job_state
-{
-    ETHOSU_JOB_IDLE = 0,
-    ETHOSU_JOB_RUNNING,
-    ETHOSU_JOB_DONE
-};
-
-struct ethosu_job
-{
-    volatile enum ethosu_job_state state;
-    const void *custom_data_ptr;
-    int custom_data_size;
-    const uint64_t *base_addr;
-    const size_t *base_addr_size;
-    int num_base_addr;
-    void *user_arg;
-};
-
 struct ethosu_driver
 {
-    struct ethosu_device *dev;
-    struct ethosu_driver *next;
-    struct ethosu_job job;
-    void *semaphore;
+    struct ethosu_device dev;
+    bool abort_inference;
     uint64_t fast_memory;
     size_t fast_memory_size;
-    uint32_t power_request_counter;
     bool status_error;
+    bool dev_power_always_on;
+    struct ethosu_driver *next;
     bool reserved;
+    volatile bool irq_triggered;
+    void *semaphore;
+    uint8_t clock_request;
+    uint8_t power_request;
 };
 
-struct ethosu_driver_version
+struct ethosu_version_id
 {
-    uint8_t major;
-    uint8_t minor;
-    uint8_t patch;
+    // Ethos-U id
+    uint8_t version_status;
+    uint8_t version_minor;
+    uint8_t version_major;
+    uint8_t product_major;
+    uint8_t arch_patch_rev;
+    uint8_t arch_minor_rev;
+    uint8_t arch_major_rev;
+
+    // Driver Version
+    uint8_t driver_patch_rev;
+    uint8_t driver_minor_rev;
+    uint8_t driver_major_rev;
+};
+
+struct ethosu_version_config
+{
+    uint8_t macs_per_cc;
+    uint8_t cmd_stream_version;
+    uint8_t shram_size;
+    uint8_t custom_dma;
+};
+
+struct ethosu_version
+{
+    struct ethosu_version_id id;
+    struct ethosu_version_config cfg;
 };
 
 enum ethosu_request_clients
@@ -93,111 +90,10 @@ enum ethosu_request_clients
 };
 
 /******************************************************************************
- * Prototypes (weak functions in driver)
+ * Variables
  ******************************************************************************/
 
-/**
- * Interrupt handler to be called on IRQ from Ethos-U
- *
- * @param drv       Pointer to driver handle
- */
-void ethosu_irq_handler(struct ethosu_driver *drv);
-
-/**
- * Flush/clean the data cache by address and size. Passing NULL as p argument
- * expects the whole cache to be flushed.
- *
- * Addresses passed to this function must be 16 byte aligned.
- *
- * @param p         16 byte aligned address
- * @param bytes     Size of memory block in bytes
- */
-void ethosu_flush_dcache(uint32_t *p, size_t bytes);
-
-/**
- * Invalidate the data cache by address and size. Passing NULL as p argument
- * expects the whole cache to be invalidated.
- *
- * Addresses passed to this function must be 16 byte aligned.
- *
- * @param p         16 byte aligned address
- * @param bytes     Size in bytes
- */
-void ethosu_invalidate_dcache(uint32_t *p, size_t bytes);
-
-/**
- * Minimal mutex implementation for baremetal applications. See
- * ethosu_driver.c.
- *
- * @return Pointer to mutex handle
- */
-void *ethosu_mutex_create(void);
-
-/**
- * Minimal sempahore implementation for baremetal applications. See
- * ethosu_driver.c.
- *
- * @return Pointer to semaphore handle
- */
-void *ethosu_semaphore_create(void);
-
-/**
- * Lock mutex.
- *
- * @param mutex     Pointer to mutex handle
- * @returns 0 on success, else negative error code
- */
-int ethosu_mutex_lock(void *mutex);
-
-/**
- * Unlock mutex.
- *
- * @param mutex     Pointer to mutex handle
- * @returns 0 on success, else negative error code
- */
-int ethosu_mutex_unlock(void *mutex);
-
-/**
- * Take semaphore.
- *
- * @param sem       Pointer to semaphore handle
- * @returns 0 on success, else negative error code
- */
-int ethosu_semaphore_take(void *sem);
-
-/**
- * Give semaphore.
- *
- * @param sem       Pointer to semaphore handle
- * @returns 0 on success, else negative error code
- */
-int ethosu_semaphore_give(void *sem);
-
-/**
- * Callback invoked just before the inference is started.
- *
- * @param drv       Pointer to driver handle
- * @param user_arg  User argument provided to ethosu_invoke_*()
- */
-void ethosu_inference_begin(struct ethosu_driver *drv, void *user_arg);
-
-/**
- * Callback invoked just after the inference has completed.
- *
- * @param drv       Pointer to driver handle
- * @param user_arg  User argument provided to ethosu_invoke_*()
- */
-void ethosu_inference_end(struct ethosu_driver *drv, void *user_arg);
-
-/**
- * Remapping command stream and base pointer addresses.
- *
- * @param address   Address to be remapped.
- * @param index     -1 command stream, 0-n base address index
- *
- * @return Remapped address
- */
-uint64_t ethosu_address_remap(uint64_t address, int index);
+extern struct ethosu_driver ethosu_drv;
 
 /******************************************************************************
  * Prototypes
@@ -205,14 +101,6 @@ uint64_t ethosu_address_remap(uint64_t address, int index);
 
 /**
  * Initialize the Ethos-U driver.
- *
- * @param drv               Pointer to driver handle
- * @param base_address      NPU register base address
- * @param fast_memory       Fast memory area, used for Ethos-U65 with spilling
- * @param fast_memory_size  Size in bytes of fast memory area
- * @param secure_enable     Configure NPU in secure- or non-secure mode
- * @param privilege_enable  Configure NPU in privileged- or non-privileged mode
- * @return 0 on success, else negative error code
  */
 int ethosu_init(struct ethosu_driver *drv,
                 const void *base_address,
@@ -222,121 +110,65 @@ int ethosu_init(struct ethosu_driver *drv,
                 uint32_t privilege_enable);
 
 /**
- * Deinitialize the Ethos-U driver.
- *
- * @param drv       Pointer to driver handle
+ * Get Ethos-U version.
  */
-void ethosu_deinit(struct ethosu_driver *drv);
+int ethosu_get_version(struct ethosu_driver *drv, struct ethosu_version *version);
 
 /**
- * Soft resets the Ethos-U device.
- *
- * @param drv       Pointer to driver handle
- * @return 0 on success, else negative error code
+ * Invoke Vela command stream.
  */
-int ethosu_soft_reset(struct ethosu_driver *drv);
+int ethosu_invoke(struct ethosu_driver *drv,
+                  const void *custom_data_ptr,
+                  const int custom_data_size,
+                  const uint64_t *base_addr,
+                  const size_t *base_addr_size,
+                  const int num_base_addr);
 
 /**
- * Request to disable Q-channel power gating of the Ethos-U device.
- * Power requests are ref.counted. Increases count.
- * (Note: clock gating is made to follow power gating)
- *
- * @param drv       Pointer to driver handle
- * @return 0 on success, else negative error code
+ * Abort Ethos-U inference.
  */
-int ethosu_request_power(struct ethosu_driver *drv);
+void ethosu_abort(struct ethosu_driver *drv);
 
 /**
- * Release disable request for Q-channel power gating of the Ethos-U device.
- * Power requests are ref.counted. Decreases count.
- *
- * @param drv       Pointer to driver handle
+ * Interrupt handler do be called on IRQ from Ethos-U
  */
-void ethosu_release_power(struct ethosu_driver *drv);
+void ethosu_irq_handler(struct ethosu_driver *drv);
 
 /**
- * Get Ethos-U driver version.
- *
- * @param ver       Driver version struct
+ * Set Ethos-U power mode.
  */
-void ethosu_get_driver_version(struct ethosu_driver_version *ver);
+void ethosu_set_power_mode(struct ethosu_driver *drv, bool always_on);
 
 /**
- * Get Ethos-U hardware information.
- *
- * @param drv       Pointer to driver handle
- * @param hw        Hardware information struct
+ *  Register a driver for multiNPU usage
  */
-void ethosu_get_hw_info(struct ethosu_driver *drv, struct ethosu_hw_info *hw);
+int ethosu_register_driver(struct ethosu_driver *drv);
 
 /**
- * Invoke command stream.
- *
- * @param drv               Pointer to driver handle
- * @param custom_data_ptr   Custom data payload
- * @param custom_data_size  Size in bytes of custom data
- * @param base_addr         Array of base address pointers
- * @param base_addr_size    Size in bytes of each address in base_addr
- * @param num_base_addr     Number of elements in base_addr array
- * @param user_arg          User argument, will be passed to
- *                          ethosu_inference_begin() and ethosu_inference_end()
- * @return 0 on success, else negative error code
+ * Deregister a driver from multiNPU usage
  */
-int ethosu_invoke_v3(struct ethosu_driver *drv,
-                     const void *custom_data_ptr,
-                     const int custom_data_size,
-                     const uint64_t *base_addr,
-                     const size_t *base_addr_size,
-                     const int num_base_addr,
-                     void *user_arg);
-
-#define ethosu_invoke(drv, custom_data_ptr, custom_data_size, base_addr, base_addr_size, num_base_addr)                \
-    ethosu_invoke_v3(drv, custom_data_ptr, custom_data_size, base_addr, base_addr_size, num_base_addr, 0)
+int ethosu_deregister_driver(struct ethosu_driver *drv);
 
 /**
- * Invoke command stream using async interface.
- * Must be followed by call(s) to ethosu_wait() upon successful return.
- *
- * @see ethosu_invoke_v3 for documentation.
- */
-int ethosu_invoke_async(struct ethosu_driver *drv,
-                        const void *custom_data_ptr,
-                        const int custom_data_size,
-                        const uint64_t *base_addr,
-                        const size_t *base_addr_size,
-                        const int num_base_addr,
-                        void *user_arg);
-
-/**
- * Wait for inference to complete (block=true)
- * Poll status or finish up if inference is complete (block=false)
- * (This function is only intended to be used in conjuction with ethosu_invoke_async)
- *
- * @param drv       Pointer to driver handle
- * @param block     If call should block if inference is running
- * @return -2 on inference not invoked, -1 on inference error, 0 on success, 1 on inference running
- */
-int ethosu_wait(struct ethosu_driver *drv, bool block);
-
-/**
- * Reserves a driver to execute inference with. Call will block until a driver
- * is available.
- *
- * @return Pointer to driver handle.
+ * Reserves a driver to execute inference with
  */
 struct ethosu_driver *ethosu_reserve_driver(void);
 
 /**
- * Release driver that was previously reserved with @see ethosu_reserve_driver.
- *
- * @param drv       Pointer to driver handle
+ * Change driver status to available
  */
 void ethosu_release_driver(struct ethosu_driver *drv);
 
 /**
- * Static inline for backwards-compatibility.
- *
- * @see ethosu_invoke_v3 for documentation.
+ * Set clock and power request bits
+ */
+enum ethosu_error_codes set_clock_and_power_request(struct ethosu_driver *drv,
+                                                    enum ethosu_request_clients client,
+                                                    enum ethosu_clock_q_request clock_request,
+                                                    enum ethosu_power_q_request power_request);
+
+/**
+ * Static inline for backwards-compatibility
  */
 static inline int ethosu_invoke_v2(const void *custom_data_ptr,
                                    const int custom_data_size,
@@ -345,7 +177,7 @@ static inline int ethosu_invoke_v2(const void *custom_data_ptr,
                                    const int num_base_addr)
 {
     struct ethosu_driver *drv = ethosu_reserve_driver();
-    int result = ethosu_invoke_v3(drv, custom_data_ptr, custom_data_size, base_addr, base_addr_size, num_base_addr, 0);
+    int result = ethosu_invoke(drv, custom_data_ptr, custom_data_size, base_addr, base_addr_size, num_base_addr);
     ethosu_release_driver(drv);
     return result;
 }

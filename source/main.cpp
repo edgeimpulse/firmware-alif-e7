@@ -56,6 +56,7 @@ extern "C" void ei_sleep_c(int32_t time_ms) { ei_sleep( time_ms ); }
 extern "C" int Init_SysTick(void);
 
 extern "C" unsigned char UartGetc(void);
+extern "C" int arm_ethosu_npu_init(void);
 
 int main()
 {
@@ -64,6 +65,11 @@ int main()
     info("ei init begins\r\n");
     printf("printf test.\r\n");
     ei_printf("ei_printf test.\r\n");
+
+    #if ARM_NPU
+    arm_ethosu_npu_init();
+    ei_printf("ARM ethos init\r\n");
+    #endif
 
     sleep_or_wait_msec(10);
 

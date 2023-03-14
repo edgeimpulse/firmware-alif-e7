@@ -23,7 +23,7 @@
 #include "ethosu_mem_config.h"      /* Arm Ethos-U memory config */
 #include "ethosu_driver.h"          /* Arm Ethos-U driver header */
 
-struct ethosu_driver ethosu_drv; /* Default Ethos-U device driver */
+// extern ethosu_driver ethosu_drv; /* Default Ethos-U device driver */
 
 #if defined(ETHOS_U_CACHE_BUF_SZ) && (ETHOS_U_CACHE_BUF_SZ > 0)
 static uint8_t cache_arena[ETHOS_U_CACHE_BUF_SZ] CACHE_BUF_ATTRIBUTE;
@@ -84,37 +84,35 @@ int arm_ethosu_npu_init(void)
     const void *ethosu_base_address = (void *)(ETHOS_U_BASE_ADDR);
 
     if (0 != (err = ethosu_init(
-                  &ethosu_drv,            /* Ethos-U driver device pointer */
-                  ethosu_base_address,    /* Ethos-U NPU's base address. */
-                  get_cache_arena(),      /* Pointer to fast mem area - NULL for U55. */
-                  get_cache_arena_size(), /* Fast mem region size. */
-                  ETHOS_U_SEC_ENABLED,    /* Security enable. */
-                  ETHOS_U_PRIV_ENABLED))) /* Privilege enable. */
-    {
+                        &ethosu_drv,            /* Ethos-U driver device pointer */
+                        ethosu_base_address,    /* Ethos-U NPU's base address. */
+                        NULL,                   /* Pointer to fast mem area - NULL for U55. */
+                        0,                      /* Fast mem region size. */
+                        1,                      /* Security enable. */
+                        1))) {                  /* Privilege enable. */
         printf_err("failed to initialise Ethos-U device\n");
         return err;
     }
 
     info("Ethos-U device initialised\n");
 
-    /* Get Ethos-U version */
-    struct ethosu_driver_version driver_version;
-    struct ethosu_hw_info hw_info;
-
-    ethosu_get_driver_version(&driver_version);
-    ethosu_get_hw_info(&ethosu_drv, &hw_info);
+     /* Get Ethos-U version */
+    struct ethosu_version version;
+    if (0 != (err = ethosu_get_version(&ethosu_drv, &version))) {
+        printf_err("failed to fetch Ethos-U version info\n");
+        return err;
+    }
 
     info("Ethos-U version info:\n");
-    info("\tArch:       v%" PRIu32 ".%" PRIu32 ".%" PRIu32 "\n",
-         hw_info.version.arch_major_rev,
-         hw_info.version.arch_minor_rev,
-         hw_info.version.arch_patch_rev);
-    info("\tDriver:     v%" PRIu8 ".%" PRIu8 ".%" PRIu8 "\n",
-         driver_version.major,
-         driver_version.minor,
-         driver_version.patch);
-    info("\tMACs/cc:    %" PRIu32 "\n", (uint32_t)(1 << hw_info.cfg.macs_per_cc));
-    info("\tCmd stream: v%" PRIu32 "\n", hw_info.cfg.cmd_stream_version);
+    info("\tArch:       v%u.%u.%u\n", version.id.arch_major_rev,
+                                    version.id.arch_minor_rev,
+                                    version.id.arch_patch_rev);
+    info("\tDriver:     v%u.%u.%u\n", version.id.driver_major_rev,
+                                    version.id.driver_minor_rev,
+                                    version.id.driver_patch_rev);
+    info("\tMACs/cc:    %u\n", (1 << version.cfg.macs_per_cc));
+    info("\tCmd stream: v%u\n", version.cfg.cmd_stream_version);
+    info("\tSHRAM size: %u\n", version.cfg.shram_size);
 
     return 0;
 }

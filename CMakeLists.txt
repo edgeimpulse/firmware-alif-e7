@@ -98,6 +98,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 
+add_compile_definitions(EI_ETHOS=1 EI_ALIF_ADDR_TRANSLATION=1)
+
 # Add ethos, ensemble, and CMSIS library dependencies through alif repo CMakeLists
 add_subdirectory(${ALIF_REPO_DIR}/source/math ${CMAKE_BINARY_DIR}/source/math EXCLUDE_FROM_ALL)
 add_subdirectory(${ALIF_REPO_DIR}/source/hal ${CMAKE_BINARY_DIR}/source/hal EXCLUDE_FROM_ALL)
