@@ -134,7 +134,7 @@ bool ei_microphone_inference_start(uint32_t n_samples, float interval_ms)
     inference.n_samples = n_samples;
     inference.buf_ready = 0;
 
-    micAlif.async_start(inference.buffers[inference.buf_select], inference.n_samples);
+    // micAlif.async_start(inference.buffers[inference.buf_select], inference.n_samples);
 
     return true;
 }
