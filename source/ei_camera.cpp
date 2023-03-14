@@ -40,6 +40,12 @@ class EiCameraAlif : public EiCamera
             ei_printf("ERROR: hal_image_init failed with error: %d\n", err);
             return false;
         }
+        ei_device_snapshot_resolutions_t rq_res;
+
+        rq_res.width = width;
+        rq_res.height = height;
+        this->set_resolution(rq_res);
+
         return true;
     }
 
