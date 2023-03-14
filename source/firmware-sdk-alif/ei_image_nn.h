@@ -145,7 +145,7 @@ void EiImageNN::run_nn(bool debug, int delay_ms, bool use_max_baudrate)
         // run the impulse: DSP, neural network and the Anomaly algorithm
         ei_impulse_result_t result = { 0 };
 
-        EI_IMPULSE_ERROR ei_error = run_classifier(&signal, &result, debug);
+        EI_IMPULSE_ERROR ei_error = run_classifier(&signal, &result, false);
         if (ei_error != EI_IMPULSE_OK) {
             ei_printf("Failed to run impulse (%d)\n", ei_error);
             break;
