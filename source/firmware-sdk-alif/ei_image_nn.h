@@ -183,8 +183,8 @@ void EiImageNN::run_nn(bool debug, int delay_ms, bool use_max_baudrate)
         }
 
         // print the predictions
-        ei_printf("Predictions (DSP: %lld us., Classification: %lld us., Anomaly: %lld us.): \n",
-                  result.timing.dsp_us, result.timing.classification_us, result.timing.anomaly_us);
+        ei_printf("Predictions (DSP: %f ms., Classification: %f ms., Anomaly: %lld us.): \n",
+                  (float)result.timing.dsp_us / 1000.f, (float)result.timing.classification_us / 1000.f, result.timing.anomaly_us);
 #if EI_CLASSIFIER_OBJECT_DETECTION == 1
         bool bb_found = result.bounding_boxes[0].value > 0;
         for (size_t ix = 0; ix < EI_CLASSIFIER_OBJECT_DETECTION_COUNT; ix++) {
