@@ -78,6 +78,8 @@ bool EiDeviceAlif::get_snapshot_list(const ei_device_snapshot_resolutions_t **sn
     snapshot_resolutions[0].height = 32;
     snapshot_resolutions[1].width = 96;
     snapshot_resolutions[1].height = 96;
+    snapshot_resolutions[2].width = 160;
+    snapshot_resolutions[2].height = 160;
 
     *snapshot_list      = snapshot_resolutions;
     *snapshot_list_size = EI_DEVICE_N_RESOLUTIONS;
