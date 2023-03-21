@@ -413,7 +413,7 @@
 //     <2=> E50RA_MW550
 // <i> Defines ILI9806E panel variant
 // <i> Default: E43RB_FW405
-#define RTE_ILI9806E_PANEL_VARIANT             1
+#define RTE_ILI9806E_PANEL_VARIANT             2
 
 #if (RTE_ILI9806E_PANEL_VARIANT == 0)
 #define RTE_ILI9806E_PANEL_E43RB_FW405_EN      1

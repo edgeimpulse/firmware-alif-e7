@@ -190,7 +190,7 @@ int tracelib_init(const char * prefix)
                              ARM_USART_DATA_BITS_8       |
                              ARM_USART_PARITY_NONE       |
                              ARM_USART_STOP_BITS_1       |
-                             ARM_USART_FLOW_CONTROL_NONE, 115200);
+                             ARM_USART_FLOW_CONTROL_NONE, 921600);
     if(ret != ARM_DRIVER_OK)
     {
         return ret;
