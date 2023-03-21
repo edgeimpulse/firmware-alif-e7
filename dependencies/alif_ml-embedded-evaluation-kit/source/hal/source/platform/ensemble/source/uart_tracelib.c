@@ -152,7 +152,7 @@ void myUART_callback(uint32_t event)
     uart_event = event;
 }
 
-int tracelib_init(const char * prefix)
+int tracelib_init(const char * prefix, int baudrate)
 {
     int32_t ret    = 0;
 
@@ -190,7 +190,7 @@ int tracelib_init(const char * prefix)
                              ARM_USART_DATA_BITS_8       |
                              ARM_USART_PARITY_NONE       |
                              ARM_USART_STOP_BITS_1       |
-                             ARM_USART_FLOW_CONTROL_NONE, 921600);
+                             ARM_USART_FLOW_CONTROL_NONE, baudrate);
     if(ret != ARM_DRIVER_OK)
     {
         return ret;

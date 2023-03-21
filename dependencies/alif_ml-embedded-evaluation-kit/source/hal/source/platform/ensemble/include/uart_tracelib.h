@@ -50,7 +50,7 @@ extern "C" {
  *
  * @note Max length is currently 256 - length of the prefix
  */
-int tracelib_init(const char * prefix);
+int tracelib_init(const char * prefix, int baudrate);
 
 /**
  * @brief write trace to UART

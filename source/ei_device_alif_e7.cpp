@@ -27,6 +27,8 @@
 #include "edge-impulse-sdk/dsp/ei_utils.h"
 #include "firmware-sdk-alif/at_base64_lib.h"
 
+#include "uart_tracelib.h"
+
 #include <cstdlib>
 #include <cstdio>
 #include <cstdint>
@@ -35,6 +37,30 @@ using namespace std;
 
 /* Todo: remove global used buffer */
 extern microphone_sample_t* mic_sample_buffer;
+
+/** Data Output Baudrate */
+const ei_device_data_output_baudrate_t ei_dev_max_data_output_baudrate = {
+    ei_xstr(MAX_BAUD),
+    MAX_BAUD,
+};
+
+const ei_device_data_output_baudrate_t ei_dev_default_data_output_baudrate = {
+    ei_xstr(DEFAULT_BAUD),
+    DEFAULT_BAUD,
+};
+
+static int get_data_output_baudrate_c(ei_device_data_output_baudrate_t *baudrate)
+{
+    size_t length = strlen(ei_dev_max_data_output_baudrate.str);
+
+    if (length < 32) {
+        memcpy(baudrate, &ei_dev_max_data_output_baudrate, sizeof(ei_device_data_output_baudrate_t));
+        return 0;
+    }
+    else {
+        return -1;
+    }
+}
 
 static ei_device_sensor_t sensor_list[] = {
     { 
@@ -86,6 +112,36 @@ bool EiDeviceAlif::get_snapshot_list(const ei_device_snapshot_resolutions_t **sn
     *color_depth = "RGB";
 
     return false;
+}
+
+/**
+ * @brief      Get the data output baudrate
+ *
+ * @param      baudrate    Baudrate used to output data
+ *
+ * @return     0
+ */
+int EiDeviceAlif::get_data_output_baudrate(ei_device_data_output_baudrate_t *baudrate)
+{
+    return get_data_output_baudrate_c(baudrate);
+}
+
+/**
+ * @brief      Set output baudrate to max
+ *
+ */
+void EiDeviceAlif::set_max_data_output_baudrate(void)
+{
+    tracelib_init(NULL, MAX_BAUD);
+}
+
+/**
+ * @brief      Set output baudrate to default
+ *
+ */
+void EiDeviceAlif::set_default_data_output_baudrate(void)
+{
+    tracelib_init(NULL, DEFAULT_BAUD);
 }
 
 /**

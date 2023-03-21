@@ -308,6 +308,14 @@ bool at_get_config(void)
     ei_printf("ID:         %s\n", dev->get_device_id().c_str());
     ei_printf("Type:       %s\n", dev->get_device_type().c_str());
     ei_printf("AT Version: " AT_COMMAND_VERSION "\n");
+
+    ei_device_data_output_baudrate_t baudrate;
+    int r = dev->get_data_output_baudrate(&baudrate);
+    if (r == 0) {
+        ei_printf("Data Transfer Baudrate: %s\r\n", baudrate.str);
+    } else {
+        ei_printf("Data Transfer Baudrate: UNKNOWN\r\n");
+    }
     ei_printf("\n");
 
     ei_printf("===== Sensors ======\n");

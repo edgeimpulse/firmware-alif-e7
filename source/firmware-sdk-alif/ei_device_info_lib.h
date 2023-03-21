@@ -342,6 +342,10 @@ public:
     {
         return 115200;
     }
+    virtual int get_data_output_baudrate(ei_device_data_output_baudrate_t *baudrate)
+    {
+        return 0;
+    }
 
     virtual void set_default_data_output_baudrate(void)
     {

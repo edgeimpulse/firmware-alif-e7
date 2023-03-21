@@ -100,7 +100,7 @@ int platform_init(void)
     extern void _clock_init(void);
     _clock_init();
 
-    tracelib_init(NULL);
+    tracelib_init(NULL, 115200);
 
     int err = 0;
     info("Processor internal clock: %" PRIu32 "Hz\n", GetSystemCoreClock());
