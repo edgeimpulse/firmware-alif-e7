@@ -6,7 +6,7 @@ This builds and runs an exported impulse locally on your machine.
 1. Create an edge impulse account at [edgeimpulse.com](https://www.edgeimpulse.com/)
 2. Install the latest `Alif Security Toolkit`:
 
-    * Navigate to the [Alif Semiconductor Kit documentation](https://alifsemi.com/kits) page (you will need to register to create an account or log in). and download the latest `App Security Toolkit` (tested with version 0.54.0) for windows or linux. If you are using MacOS, download the linux version.
+    * Navigate to the [Alif Semiconductor Kit documentation](https://alifsemi.com/kits) page (you will need to register to create an account or log in). and download the latest `App Security Toolkit` (tested with version 0.56.0) for windows or linux. If you are using MacOS, download the linux version.
     * Extract archive and place `app-release` in the root of this repo
     * Follow the instructions in local the `Alif Security Toolkit Quickstart Guide` to finalize the installation.
 3. Install either `docker`, arm gcc, or arm clang: 
