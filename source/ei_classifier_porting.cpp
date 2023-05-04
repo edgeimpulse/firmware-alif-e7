@@ -26,13 +26,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include "hal/uart_stdout.h"
-
-#if EI_CONFIG_ALIF_HP == 1
-#include "system_M55_HP.h"
-#else
-#include "system_M55_HE.h"
-#endif
+#include "hal.h"
 
 #ifndef EI_CORE_CLOCK_HZ
 #ifdef EI_CONFIG_ETHOS_U55_256
@@ -42,7 +36,9 @@
 #endif
 #endif
 
+/* Extern function prototypes ---------------------------------------------- */
 extern "C" uint64_t Get_SysTick_Cycle_Count(void);
+extern "C" unsigned char UartGetcNoBlock(void);
 
 EI_IMPULSE_ERROR ei_run_impulse_check_canceled()
 {
@@ -97,7 +93,7 @@ char ei_getchar(void)
 {
     auto c = UartGetcNoBlock();
     if (c == 0xFF ) { return 0; } //weird ei convention
-    else { return c; }
+    else { return c; ei_printf("ch: %c\r\n", c);}
 }
 
 void *ei_malloc(size_t size)

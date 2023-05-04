@@ -1,0 +1,23 @@
+#
+# Copyright (c) 2020-2021 Arm Limited. All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the License); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an AS IS BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+add_library(ethosu_mhu_v2 STATIC)
+target_include_directories(ethosu_mhu_v2 PUBLIC include)
+
+target_sources(ethosu_mhu_v2 PRIVATE src/mhu_v2.cpp)
+target_link_libraries(ethosu_mhu_v2 PRIVATE ethosu_mailbox ethosu_log)

@@ -1,0 +1,71 @@
+@startuml
+
+skinparam backgroundColor #EEEBDC
+
+box "Hardware" #FFC700
+participant "Cortex-M" as cortexm
+participant "Ethos-U" as ethosu
+end box
+
+box "CMSIS Device" #0091BD
+participant "__VECTOR_TABLE" as ivec
+participant "Reset_Handler()" as reset
+end box
+
+box "Compiler" #FF6B00
+participant "Runtime" as runtime
+end box
+
+box "Target" #95D600
+participant "common" as common
+participant "corstone-300" as target
+end box
+
+box "Drivers" #00C1DE
+participant "NPU" as driver
+participant "UART" as uart
+participant "MPU" as mpu
+end box
+
+box "Application" #7D868C
+participant "main()" as main
+end box
+
+cortexm -> ivec++:
+    ivec -> reset++: Reset_Handler()
+        reset -> reset++: SystemInit()
+        deactivate reset
+
+        reset -> runtime++: __main()
+        note over runtime
+            Scatter loading
+            Initializing stack and heap
+        end note
+
+        note over runtime
+            Calling constructors
+        end note
+
+        runtime -> common++: init() [constructor]
+            note over common
+                The constructor is called after stack and heap have been initialized,
+                but before the main() function is called
+            end note
+
+            common -> target++: targetSetup()
+                target -> uart++: uart_init()
+                return
+
+                target -> driver++: ethosu_init()
+                return
+
+                target -> mpu++: loadAndEnableConfig()
+                return
+            return
+        return
+
+        runtime -> main++: main()
+            note over main
+                Running application
+            end note
+@enduml

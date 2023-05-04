@@ -1,0 +1,51 @@
+@startuml
+
+skinparam {
+    BackgroundColor #EEEBDC
+    DefaultFontColor black
+}
+
+skinparam component {
+    BackgroundColor #0091BD
+    BorderColor black
+    ArrowColor black
+}
+
+skinparam note {
+    BackgroundColor #00C1DE
+    BorderColor black
+}
+
+[ethosu_target_init] --> [ethosu_target_startup]
+
+[ethosu_target_startup] --> [ethosu_target_link]
+
+[ethosu_target_link] --> [ethosu_target_common]
+
+note right of ethosu_target_init
+    Links drivers and calls targetSetup() to initialize the target.
+end note
+
+note right of ethosu_target_startup
+    Links CMSIS Device and Core libraries.
+
+    CMSIS Device provides startup and system files that are used to initialize
+    the CPU, configure CPU extensions and setup the interrupt vector table.
+
+    CMSIS Core provides an interface to the CPU, for example configuring
+    caches, systick or interrupt handling.
+
+    Some RTOSes provide their own startup files. Those applications should
+    link ethosu_target_link instead.
+end note
+
+note right of ethosu_target_link
+    Adds scatter file or linker script, describing the memory layout of the target.
+end note
+
+note right of ethosu_target_common
+    All applications should depend on this library. It is used to export definitions
+    from the target to the application.
+end note
+
+@enduml

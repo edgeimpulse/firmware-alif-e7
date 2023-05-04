@@ -20,8 +20,7 @@
  * SOFTWARE.
  */
 
-#include "hal/hal.h"
-#include "hal/uart_stdout.h"
+#include "hal.h"
 #include "firmware-sdk-alif/ei_device_info_lib.h"
 #include "firmware-sdk-alif/ei_device_memory.h"
 #include "firmware-sdk-alif/at-server/ei_at_server.h"
@@ -30,26 +29,17 @@
 #include "firmware-sdk-alif/ei_image_lib.h"
 #include "ei_microphone.h"
 #include "ei_run_impulse.h"
+#include "delay.h"
 
 #include <cstdio>
 
 /* Project Includes */
-#include "Driver_PINMUX_AND_PINPAD.h"
-#include "Driver_GPIO.h" 
-
-#include "RTE_Device.h"
-#include "RTE_Components.h"
-
-#include "hal/bsp_core_log.h"
-
+#include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "image_processing.h"
-
-
-extern ARM_DRIVER_GPIO Driver_GPIO1;
+#include <cstdio>
+#include "log_macros.h"
 
 #if !NDEBUG
 extern "C" void __stack_chk_fail(void)
@@ -62,59 +52,27 @@ extern "C" void __stack_chk_fail(void)
 void *__stack_chk_guard = (void *)0xaeaeaeae;
 #endif
 
-void SetupLEDs()
-{
-	// Green LED
-	Driver_GPIO1.Initialize(PIN_NUMBER_15,NULL);
-	Driver_GPIO1.PowerControl(PIN_NUMBER_15,  ARM_POWER_FULL);
-	Driver_GPIO1.SetDirection(PIN_NUMBER_15, GPIO_PIN_DIRECTION_OUTPUT);
-	PINMUX_Config (PORT_NUMBER_1, PIN_NUMBER_15, PINMUX_ALTERNATE_FUNCTION_0);
-	PINPAD_Config (PORT_NUMBER_1, PIN_NUMBER_15, (0x09 | PAD_FUNCTION_OUTPUT_DRIVE_STRENGTH_04_MILI_AMPS));
-	Driver_GPIO1.SetValue(PIN_NUMBER_15, GPIO_PIN_OUTPUT_STATE_LOW);
-
-	// Red LED
-	Driver_GPIO1.Initialize(PIN_NUMBER_14,NULL);
-	Driver_GPIO1.PowerControl(PIN_NUMBER_14,  ARM_POWER_FULL);
-	Driver_GPIO1.SetDirection(PIN_NUMBER_14, GPIO_PIN_DIRECTION_OUTPUT);
-	PINMUX_Config (PORT_NUMBER_1, PIN_NUMBER_14, PINMUX_ALTERNATE_FUNCTION_0);
-	PINPAD_Config (PORT_NUMBER_1, PIN_NUMBER_14, (0x09 | PAD_FUNCTION_OUTPUT_DRIVE_STRENGTH_04_MILI_AMPS));
-	Driver_GPIO1.SetValue(PIN_NUMBER_14, GPIO_PIN_OUTPUT_STATE_LOW);
-}
-
 extern "C" void ei_sleep_c(int32_t time_ms) { ei_sleep( time_ms ); }
 extern "C" int Init_SysTick(void);
 
+extern "C" unsigned char UartGetc(void);
+extern "C" int arm_ethosu_npu_init(void);
+
 int main()
 {
-    Init_SysTick();
+    init_trigger_rx();
+    hal_platform_init();
+    info("ei init begins\r\n");
+    printf("printf test.\r\n");
+    ei_printf("ei_printf test.\r\n");
 
-    // System init takes place in Reset function, see startup_M55_HP.c
-#if defined(ARM_NPU)
-    /* If Arm Ethos-U NPU is to be used, we initialize it here */
-    if (0 != arm_npu_init()) {
-        ei_printf("Failed to initialize NPU");
-    }
-#endif /* ARM_NPU */
+    #if ARM_NPU
+    arm_ethosu_npu_init();
+    ei_printf("ARM ethos init\r\n");
+    #endif
 
-    if (UartStdOutInit())
-    {
-        // non zero return on uart init
-        while (1)
-            ;
-    }
-    
-    // Setup Pin-Mux and Pad Control registers
-    SetupLEDs();
+    sleep_or_wait_msec(10);
 
-	for (int i = 0; i < 3; i++) {
-      if (camera_init() != 0) {
-        ei_printf("Failed to initialize Camera, retrying\n");
-      } else {
-          break;
-      }
-  }
-
-    //setvbuf(stdout, NULL, _IONBF, 0);
     auto at = ATServer::get_instance();
 
     at->register_command(AT_CONFIG, AT_CONFIG_HELP_TEXT, nullptr, at_get_config, nullptr, nullptr);
@@ -136,6 +94,11 @@ int main()
 
     ei_microphone_init();
 
+    int err = hal_image_init();
+    if (0 != err) {
+        ei_printf("hal_image_init failed with error: %d\n", err);
+    }
+
     while (1)
     {
         // blocking call
@@ -144,11 +107,11 @@ int main()
         {
             at->handle(data);
         }
-        else
-        {
-            ei_printf("UART read error\n");
-            break;
-        }
+        // else
+        // {
+        //     ei_printf("UART read error\n");
+        //     break;
+        // }
     }
 }
 

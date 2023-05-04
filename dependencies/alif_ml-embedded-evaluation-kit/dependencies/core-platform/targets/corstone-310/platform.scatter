@@ -1,0 +1,172 @@
+/*
+ * Copyright (c) 2019-2022 Arm Limited.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the License); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * Corstone-310 is the next generation Corstone-300 where the CPU
+ * has been upgraded to Cortex-M85.
+ *
+ * This is a simplified picture of the Corstone-310 memory system.
+ * Please refer to the Corstone SSE-310 Technical Reference Manual for
+ * further information.
+ *
+ * https://developer.arm.com/ip-products/subsystem/corstone/corstone-300
+ *
+ * +---------------+   +---------------+  +------+
+ * | Ethos-U55     |   | Cortex-M85    +--+ ITCM |
+ * |               |   |               |  +------+
+ * |               |   |               |
+ * |               |   |               |  +------+
+ * |  M1      M0   |   |               +--+ DTCM |
+ * +---+-------+---+   +-------+-------+  +------+
+ *     |       |               |
+ *     |   +---+---------------+-----+
+ *     |   | AMBA AXI NIC-400-Lite   |
+ *     |   +---+-----------------+---+
+ *     |       |                 |
+ * +---+-------+------------+ +--+-------+
+ * | AMBA AXI NIC-400       | | SSE-300  |
+ * +---+--------+--------+--+ | SRAM     |
+ *     |        |        |    +----------+
+ * +---+---+ +--+---+ +--+--+
+ * | Flash | | BRAM | | DDR |
+ * +-------+ +------+ +-----+
+ *
+ * +-----------------------+-------------+-------------+----+--------------------------------------+
+ * |  Memory region name   | Base addr   |    Size     |IDAU|  MCC load address + remarks          |
+ * +-----------------------+-------------+-------------+----+--------------------------------------+
+ * | ITCM                  | 0x0000_0000 | 0x0000_8000 | NS | 32 kiB                               |
+ * | ITCM                  | 0x1000_0000 | 0x0000_8000 | S  | Secure alias for NS ITCM             |
+ * | FPGA Data SRAM; BRAM  | 0x0100_0000 | 0x0020_0000 | NS | 2 MiB                                |
+ * | FPGA data SRAM; BRAM  | 0x1100_0000 | 0x0020_0000 | S  | Secure alias for NS BRAM             |
+ * | DTCM                  | 0x2000_0000 | 0x0000_8000 | NS | 32 kiB                               |
+ * | DTCM                  | 0x3000_0000 | 0x0000_8000 | S  | Secure alias for NS DTCM             |
+ * | SSE-300 internal SRAM | 0x2100_0000 | 0x0040_0000 | NS | 2 banks of 2 MiB; 3 cycles latency   |
+ * | SSE-300 internal SRAM | 0x3100_0000 | 0x0040_0000 | S  | Secure alias for NS internal SRAM    |
+ * | DDR                   | 0x6000_0000 | 0x1000_0000 | NS | 256 MB bank                          |
+ * | DDR                   | 0x7000_0000 | 0x1000_0000 | S  | Secure alias for NS DDR              |
+ * +-----------------------+-------------+-------------+----+--------------------------------------+
+ *
+ *  Note: Ethos-U55 can access BRAM, internal SRAM and the DDR sections => activation buffers and
+ *        the model should only be placed in those regions.
+ *
+ *  Note: Alias regions means that secure and non-secure addresses are mapped to the same physical
+ *        memory banks.
+ */
+
+/* default value - '1', for DRAM */
+#ifndef ETHOSU_MODEL
+#define ETHOSU_MODEL  1
+#endif
+
+/* default value - '1', for DRAM */
+#ifndef ETHOSU_ARENA
+#define ETHOSU_ARENA  1
+#endif
+
+#ifndef STACK_SIZE
+#define STACK_SIZE 0x8000
+#endif
+
+#ifndef HEAP_SIZE
+#define HEAP_SIZE 0x10000
+#endif
+
+#define ITCM_START 0x10000000
+#define ITCM_SIZE  0x00008000
+
+#define DTCM_START 0x30000000
+#define DTCM_SIZE  0x00008000
+
+#define BRAM_START 0x11000000
+#define BRAM_SIZE  0x00200000
+
+#define SRAM_START 0x31000000
+#define SRAM_SIZE  0x00400000
+
+#define DDR_START  0x70000000
+#define DDR_SIZE   0x10000000
+
+#if STACK_SIZE > DTCM_SIZE
+#error Stack size larger than DTCM size
+#endif
+
+/* ----------------------------------------------------------------------------
+  Stack seal size definition
+ *----------------------------------------------------------------------------*/
+
+APP_IMAGE BRAM_START BRAM_SIZE
+{
+    rom_exec BRAM_START BRAM_SIZE
+    {
+        *.o (RESET, +First)
+        *(InRoot$$Sections)
+        startup_ARMCM85.o
+        system_ARMCM85.o
+        target.o
+        .ANY1 (+RO +RW +ZI)
+    }
+
+    ARM_LIB_HEAP +0 EMPTY ALIGN 8 HEAP_SIZE {}
+    ARM_LIB_STACK DTCM_START EMPTY ALIGN 8 STACK_SIZE {}
+}
+
+; Place all SRAM and DDR execution regions in DDR. We have plenty of DDR
+; and can perform scatter loading from here.
+LOAD_REGION_DDR DDR_START DDR_SIZE
+{
+    ; Place model and its affiliates in DRAM
+    rom_dram DDR_START
+    {
+#if (ETHOSU_MODEL == 1)
+        * (network_model_sec)
+#endif
+        * (input_data_sec)
+        * (expected_output_data_sec)
+        * (output_data_sec)
+
+        * (ethosu_core_in_queue)
+        * (ethosu_core_out_queue)
+    }
+
+#if (ETHOSU_ARENA == 1)
+    ; Place tensor arena in DRAM if we have a fast memory area
+    ARENA +0 UNINIT ALIGN 16
+    {
+        * (.bss.tensor_arena)
+    }
+#endif
+
+    SRAM SRAM_START ALIGN 16 SRAM_SIZE
+    {
+#if (ETHOSU_MODEL == 0)
+        ; Place network model in SRAM
+        * (network_model_sec)
+#endif
+
+#if (ETHOSU_ARENA == 0)
+        ; Place tensor arena in SRAM
+        * (.bss.tensor_arena)
+#endif
+
+        ; Place scratch buffer in SRAM
+        * (.bss.ethosu_scratch)
+
+        ; SRAM data
+        * (.sram.data)
+    }
+}

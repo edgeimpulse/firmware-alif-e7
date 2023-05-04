@@ -36,9 +36,10 @@
 extern bool ei_user_invoke_stop_lib(void)
 {
     char ch;
-    while(1) { 
+    // while(1) { 
         ch = ei_getchar();
-        if(ch == 0) { return false; }
+        // if(ch == 0) { return false; }
         if(ch == 'b') { return true; }
-    }
+        else { return false; }
+    // }
 }

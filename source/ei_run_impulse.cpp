@@ -51,7 +51,7 @@ void run_nn(bool debug) {
         EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE,
         EI_CLASSIFIER_LABEL_COUNT);
 
-    imageNN.run_nn(debug, debug? 0:1000, false);
+    imageNN.run_nn(debug, debug? 0:1000, true);
 }
 
 
@@ -103,8 +103,8 @@ void run_nn(bool debug) {
         }
 
         // print the predictions
-        ei_printf("Predictions (DSP: %lld us., Classification: %lld us., Anomaly: %lld us.): \n",
-                  result.timing.dsp_us, result.timing.classification_us, result.timing.anomaly_us);
+        ei_printf("Predictions (DSP: %f ms., Classification: %f ms., Anomaly: %lld us.): \n",
+                  (float)result.timing.dsp_us / 1000.f, (float)result.timing.classification_us / 1000.f, result.timing.anomaly_us);
         for (size_t ix = 0; ix < EI_CLASSIFIER_LABEL_COUNT; ix++) {
             ei_printf("    %s: \t%f\r\n", result.classification[ix].label, result.classification[ix].value);
         }
@@ -176,7 +176,7 @@ void run_nn_continuous(bool debug)
         if (++print_results >= (EI_CLASSIFIER_SLICES_PER_MODEL_WINDOW >> 1)) {
             // print the predictions
             ei_printf("Predictions (DSP: %lld us., Classification: %lld us., Anomaly: %lld us.): \n",
-                result.timing.dsp_us, result.timing.classification_us, result.timing.anomaly_us);
+                (float)result.timing.dsp_us / 1000.f, (float)result.timing.classification_us / 1000.f, result.timing.anomaly_us);
             for (size_t ix = 0; ix < EI_CLASSIFIER_LABEL_COUNT; ix++) {
                 ei_printf("    %s: \t", result.classification[ix].label);
                 ei_printf_float(result.classification[ix].value);

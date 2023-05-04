@@ -126,6 +126,7 @@ void EiImageNN::run_nn(bool debug, int delay_ms, bool use_max_baudrate)
     }
 
     while (!ei_user_invoke_stop_lib()) {
+    // while (1) {
         ei::signal_t signal;
         signal.total_length = image_height * image_width; // length of OUTPUT, not input
         signal.get_data = [this](size_t offset, size_t length, float *out_ptr) {
@@ -135,7 +136,7 @@ void EiImageNN::run_nn(bool debug, int delay_ms, bool use_max_baudrate)
         ei_printf("Taking photo...\n");
 
         if (!camera->ei_camera_capture_rgb888_packed_big_endian(
-                image,
+                &image,
                 image_size)) {
             ei_printf("Failed to capture image\r\n");
             break;
@@ -182,8 +183,8 @@ void EiImageNN::run_nn(bool debug, int delay_ms, bool use_max_baudrate)
         }
 
         // print the predictions
-        ei_printf("Predictions (DSP: %lld us., Classification: %lld us., Anomaly: %lld us.): \n",
-                  result.timing.dsp_us, result.timing.classification_us, result.timing.anomaly_us);
+        ei_printf("Predictions (DSP: %f ms., Classification: %f ms., Anomaly: %lld us.): \n",
+                  (float)result.timing.dsp_us / 1000.f, (float)result.timing.classification_us / 1000.f, result.timing.anomaly_us);
 #if EI_CLASSIFIER_OBJECT_DETECTION == 1
         bool bb_found = result.bounding_boxes[0].value > 0;
         for (size_t ix = 0; ix < EI_CLASSIFIER_OBJECT_DETECTION_COUNT; ix++) {

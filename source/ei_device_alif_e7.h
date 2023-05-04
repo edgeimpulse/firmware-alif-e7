@@ -28,7 +28,11 @@
 #include "firmware-sdk-alif/ei_device_memory.h"
 
 /* Const defines ----------------------------------------------------------- */
-#define EI_DEVICE_N_RESOLUTIONS 2
+#define EI_DEVICE_N_RESOLUTIONS 3
+
+/* Supported baud rates --------------------------------------------------- */
+#define DEFAULT_BAUD 115200
+#define MAX_BAUD 921600
 
 class EiDeviceAlif : public EiDeviceInfo
 {
@@ -39,6 +43,9 @@ public:
     bool read_encode_send_sample_buffer(size_t address, size_t length);
     bool get_snapshot_list(const ei_device_snapshot_resolutions_t **resolution_list, size_t *resolution_list_size,
 				   const char **color_depth);
+    int get_data_output_baudrate(ei_device_data_output_baudrate_t *baudrate);
+    void set_max_data_output_baudrate(void);
+    void set_default_data_output_baudrate(void);
 };
 
 #endif /* EI_DEVICE_ALIF_E7 */

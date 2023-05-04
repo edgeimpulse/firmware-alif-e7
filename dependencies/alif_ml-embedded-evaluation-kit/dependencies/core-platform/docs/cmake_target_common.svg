@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="473px" preserveAspectRatio="none" style="width:747px;height:473px;background:#EEEBDC;" version="1.1" viewBox="0 0 747 473" width="747px" zoomAndPan="magnify"><defs><filter height="300%" id="f1f0gza4i4o0zv" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--entity ethosu_target_init--><rect fill="#0091BD" filter="url(#f1f0gza4i4o0zv)" height="36.2969" style="stroke: #000000; stroke-width: 1.5;" width="144" x="26.5" y="8"/><rect fill="#0091BD" height="5" style="stroke: #000000; stroke-width: 1.5;" width="10" x="21.5" y="13"/><rect fill="#0091BD" height="5" style="stroke: #000000; stroke-width: 1.5;" width="10" x="21.5" y="34.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="124" x="36.5" y="30.9951">ethosu_target_init</text><!--entity ethosu_target_startup--><rect fill="#0091BD" filter="url(#f1f0gza4i4o0zv)" height="36.2969" style="stroke: #000000; stroke-width: 1.5;" width="173" x="12" y="166.5"/><rect fill="#0091BD" height="5" style="stroke: #000000; stroke-width: 1.5;" width="10" x="7" y="171.5"/><rect fill="#0091BD" height="5" style="stroke: #000000; stroke-width: 1.5;" width="10" x="7" y="192.7969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="153" x="22" y="189.4951">ethosu_target_startup</text><!--entity ethosu_target_link--><rect fill="#0091BD" filter="url(#f1f0gza4i4o0zv)" height="36.2969" style="stroke: #000000; stroke-width: 1.5;" width="147" x="25" y="325"/><rect fill="#0091BD" height="5" style="stroke: #000000; stroke-width: 1.5;" width="10" x="20" y="330"/><rect fill="#0091BD" height="5" style="stroke: #000000; stroke-width: 1.5;" width="10" x="20" y="351.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="127" x="35" y="347.9951">ethosu_target_link</text><!--entity ethosu_target_common--><rect fill="#0091BD" filter="url(#f1f0gza4i4o0zv)" height="36.2969" style="stroke: #000000; stroke-width: 1.5;" width="185" x="6" y="423"/><rect fill="#0091BD" height="5" style="stroke: #000000; stroke-width: 1.5;" width="10" x="1" y="428"/><rect fill="#0091BD" height="5" style="stroke: #000000; stroke-width: 1.5;" width="10" x="1" y="449.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="165" x="16" y="445.9951">ethosu_target_common</text><polygon fill="#00C1DE" filter="url(#f1f0gza4i4o0zv)" points="206,13.5,206,38.6328,601,38.6328,601,23.5,591,13.5,206,13.5" style="stroke: #000000; stroke-width: 1.0;"/><polygon fill="#00C1DE" points="206,13.5,206,22,170.5801,26,206,30,206,38.6328,601,38.6328,601,23.5,591,13.5,206,13.5" style="stroke: #000000; stroke-width: 1.0;"/><line style="stroke: #000000; stroke-width: 1.0;" x1="591" x2="591" y1="13.5" y2="23.5"/><line style="stroke: #000000; stroke-width: 1.0;" x1="601" x2="591" y1="23.5" y2="23.5"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="374" x="212" y="30.5669">Links drivers and calls targetSetup() to initialize the target.</text><polygon fill="#00C1DE" filter="url(#f1f0gza4i4o0zv)" points="220,104,220,265.3281,707,265.3281,707,114,697,104,220,104" style="stroke: #000000; stroke-width: 1.0;"/><polygon fill="#00C1DE" points="220,104,220,180.5,185.1162,184.5,220,188.5,220,265.3281,707,265.3281,707,114,697,104,220,104" style="stroke: #000000; stroke-width: 1.0;"/><line style="stroke: #000000; stroke-width: 1.0;" x1="697" x2="697" y1="104" y2="114"/><line style="stroke: #000000; stroke-width: 1.0;" x1="707" x2="697" y1="114" y2="114"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="244" x="226" y="121.0669">Links CMSIS Device and Core libraries.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="0" x="230" y="136.1997"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="466" x="226" y="151.3325">CMSIS Device provides startup and system files that are used to initialize</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="459" x="226" y="166.4653">the CPU, configure CPU extensions and setup the interrupt vector table.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="0" x="230" y="181.5981"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="444" x="226" y="196.731">CMSIS Core provides an interface to the CPU, for example configuring</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="234" x="226" y="211.8638">caches, systick or interrupt handling.</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="0" x="230" y="226.9966"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="455" x="226" y="242.1294">Some RTOSes provide their own startup files. Those applications should</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="198" x="226" y="257.2622">link ethosu_target_link instead.</text><polygon fill="#00C1DE" filter="url(#f1f0gza4i4o0zv)" points="207,330.5,207,355.6328,712,355.6328,712,340.5,702,330.5,207,330.5" style="stroke: #000000; stroke-width: 1.0;"/><polygon fill="#00C1DE" points="207,330.5,207,339,172.1807,343,207,347,207,355.6328,712,355.6328,712,340.5,702,330.5,207,330.5" style="stroke: #000000; stroke-width: 1.0;"/><line style="stroke: #000000; stroke-width: 1.0;" x1="702" x2="702" y1="330.5" y2="340.5"/><line style="stroke: #000000; stroke-width: 1.0;" x1="712" x2="702" y1="340.5" y2="340.5"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="484" x="213" y="347.5669">Adds scatter file or linker script, describing the memory layout of the target.</text><polygon fill="#00C1DE" filter="url(#f1f0gza4i4o0zv)" points="225.5,421,225.5,461.2656,725.5,461.2656,725.5,431,715.5,421,225.5,421" style="stroke: #000000; stroke-width: 1.0;"/><polygon fill="#00C1DE" points="225.5,421,225.5,437,191.2773,441,225.5,445,225.5,461.2656,725.5,461.2656,725.5,431,715.5,421,225.5,421" style="stroke: #000000; stroke-width: 1.0;"/><line style="stroke: #000000; stroke-width: 1.0;" x1="715.5" x2="715.5" y1="421" y2="431"/><line style="stroke: #000000; stroke-width: 1.0;" x1="725.5" x2="715.5" y1="431" y2="431"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="479" x="231.5" y="438.0669">All applications should depend on this library. It is used to export definitions</text><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="217" x="231.5" y="453.1997">from the target to the application.</text><!--link ethosu_target_init to ethosu_target_startup--><path d="M98.5,44.182 C98.5,72.9303 98.5,128.8824 98.5,160.7609 " fill="none" id="ethosu_target_init-ethosu_target_startup" style="stroke: #000000; stroke-width: 1.0;"/><polygon fill="#000000" points="98.5,166.0419,102.5,157.0419,98.5,161.0419,94.5,157.0419,98.5,166.0419" style="stroke: #000000; stroke-width: 1.0;"/><!--link ethosu_target_startup to ethosu_target_link--><path d="M98.5,202.682 C98.5,231.4303 98.5,287.3824 98.5,319.2609 " fill="none" id="ethosu_target_startup-ethosu_target_link" style="stroke: #000000; stroke-width: 1.0;"/><polygon fill="#000000" points="98.5,324.5419,102.5,315.5419,98.5,319.5419,94.5,315.5419,98.5,324.5419" style="stroke: #000000; stroke-width: 1.0;"/><!--link ethosu_target_link to ethosu_target_common--><path d="M98.5,361.4331 C98.5,377.4118 98.5,400.611 98.5,417.84 " fill="none" id="ethosu_target_link-ethosu_target_common" style="stroke: #000000; stroke-width: 1.0;"/><polygon fill="#000000" points="98.5,422.9807,102.5,413.9807,98.5,417.9807,94.5,413.9807,98.5,422.9807" style="stroke: #000000; stroke-width: 1.0;"/><!--
+@startuml
+
+skinparam {
+    BackgroundColor #EEEBDC
+    DefaultFontColor black
+}
+
+skinparam component {
+    BackgroundColor #0091BD
+    BorderColor black
+    ArrowColor black
+}
+
+skinparam note {
+    BackgroundColor #00C1DE
+    BorderColor black
+}
+
+[ethosu_target_init] - -> [ethosu_target_startup]
+
+[ethosu_target_startup] - -> [ethosu_target_link]
+
+[ethosu_target_link] - -> [ethosu_target_common]
+
+note right of ethosu_target_init
+    Links drivers and calls targetSetup() to initialize the target.
+end note
+
+note right of ethosu_target_startup
+    Links CMSIS Device and Core libraries.
+
+    CMSIS Device provides startup and system files that are used to initialize
+    the CPU, configure CPU extensions and setup the interrupt vector table.
+
+    CMSIS Core provides an interface to the CPU, for example configuring
+    caches, systick or interrupt handling.
+
+    Some RTOSes provide their own startup files. Those applications should
+    link ethosu_target_link instead.
+end note
+
+note right of ethosu_target_link
+    Adds scatter file or linker script, describing the memory layout of the target.
+end note
+
+note right of ethosu_target_common
+    All applications should depend on this library. It is used to export definitions
+    from the target to the application.
+end note
+
+@enduml
+
+PlantUML version 1.2017.15(Mon Jul 03 18:45:34 CEST 2017)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 11.0.15+10-Ubuntu-0ubuntu0.18.04.1
+Operating System: Linux
+OS Version: 5.4.0-113-generic
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

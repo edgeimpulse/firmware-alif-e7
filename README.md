@@ -6,7 +6,7 @@ This builds and runs an exported impulse locally on your machine.
 1. Create an edge impulse account at [edgeimpulse.com](https://www.edgeimpulse.com/)
 2. Install the latest `Alif Security Toolkit`:
 
-    * Navigate to the [Alif Semiconductor Kit documentation](https://alifsemi.com/kits) page (you will need to register to create an account or log in). and download the latest `App Security Toolkit` (tested with version 0.56.0) for windows or linux. If you are using MacOS, download the linux version.
+    * Navigate to the [Alif Semiconductor Kit documentation](https://alifsemi.com/kits) page (you will need to register to create an account or log in). and download the latest `App Security Toolkit` (tested with version 0.54.0) for windows or linux. If you are using MacOS, download the linux version.
     * Extract archive and place `app-release` in the root of this repo
     * Follow the instructions in local the `Alif Security Toolkit Quickstart Guide` to finalize the installation.
 3. Install either `docker`, arm gcc, or arm clang: 
@@ -38,25 +38,13 @@ docker build -t alif-firmware .
 
 Build the the firmware with following command:
 ```
-docker run --rm -it -v "${PWD}":/app alif-firmware /bin/bash -c "sh build.sh"
+docker run --rm -it -v "${PWD}":/app alif-firmware /bin/bash -c "sh build_appkit.sh"
 ```
 
 ### With your local gcc or armclang toolchain 
+0. Ensure you have a compatible version of ARM GCC installed and added to your path
 1. Extract the zip file downloaded from edge impulse into the `source` directory of this repository
-2. Choose one of the following:
-    1. run cmake .. -DTARGET_SUBSYSTEM=HP to target Cortex M55 core 0 (high performance) OR
-    2. run cmake .. -DTARGET_SUBSYSTEM=HE to target Cortex M55 core 1 (high efficiency)
-3. If you wish to use gcc, add the cmake flag: -DCMAKE_TOOLCHAIN_FILE=../scripts/cmake/toolchains/bare-metal-gcc.cmake
-4. armclang is the default toolchain file (-DCMAKE_TOOLCHAIN_FILE=../scripts/cmake/toolchains/bare-metal-armclang.cmake)
-5. run make to build to app.axf
-6. Example:
-
-```
-mkdir build
-cd build
-cmake .. -DTARGET_SUBSYSTEM=HP -DCMAKE_TOOLCHAIN_FILE=../scripts/cmake/toolchains/bare-metal-gcc.cmake -G"Unix Makefiles"
-make -j8
-```
+2. Run `build_appkit.sh`
 
 ### Flash your device
 0. Ensure your board is configured for programming over the SEUART interface by following the [Edge Impulse Ensemble E7 setup guide](https://docs.edgeimpulse.com/docs/development-platforms/officially-supported-mcu-targets/alif-ensemble-e7#connecting-to-edge-impulse)
