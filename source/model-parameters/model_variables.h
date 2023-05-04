@@ -29,25 +29,25 @@
 #include "edge-impulse-sdk/classifier/ei_model_types.h"
 #include "edge-impulse-sdk/classifier/inferencing_engines/engines.h"
 
-const char* ei_classifier_inferencing_categories[] = { "face" };
+const char* ei_classifier_inferencing_categories[] = { "qr-code" };
 
-uint8_t ei_dsp_config_3_axes[] = { 0 };
-const uint32_t ei_dsp_config_3_axes_size = 1;
-ei_dsp_config_image_t ei_dsp_config_3 = {
-    3, // uint32_t blockId
+uint8_t ei_dsp_config_22_axes[] = { 0 };
+const uint32_t ei_dsp_config_22_axes_size = 1;
+ei_dsp_config_image_t ei_dsp_config_22 = {
+    22, // uint32_t blockId
     1, // int implementationVersion
     1, // int length of axes
-    "Grayscale" // select channels
+    "RGB" // select channels
 };
 
 const size_t ei_dsp_blocks_size = 1;
 ei_model_dsp_t ei_dsp_blocks[ei_dsp_blocks_size] = {
-    { // DSP block 3
-        9216,
+    { // DSP block 22
+        76800,
         &extract_image_features,
-        (void*)&ei_dsp_config_3,
-        ei_dsp_config_3_axes,
-        ei_dsp_config_3_axes_size
+        (void*)&ei_dsp_config_22,
+        ei_dsp_config_22_axes,
+        ei_dsp_config_22_axes_size
     }
 };
 
@@ -64,7 +64,7 @@ const ei_learning_block_config_tflite_graph_t ei_learning_block_config_0 = {
     .implementation_version = 1,
     .block_id = 0,
     .object_detection = 1,
-    .object_detection_last_layer = EI_CLASSIFIER_LAST_LAYER_FOMO,
+    .object_detection_last_layer = EI_CLASSIFIER_LAST_LAYER_YOLOV5,
     .output_data_tensor = 0,
     .output_labels_tensor = 1,
     .output_score_tensor = 2,
@@ -89,18 +89,18 @@ const ei_model_performance_calibration_t ei_calibration = {
 };
 
 
-const ei_impulse_t impulse_1085_2 = {
-    .project_id = 1085,
-    .project_owner = "Edge Impulse Profiling",
-    .project_name = "fomo-96-96-faces-gray",
-    .deploy_version = 2,
+const ei_impulse_t impulse_213972_7 = {
+    .project_id = 213972,
+    .project_owner = "Brambles",
+    .project_name = "Computer Vision - QR Code 160x160 - YOLOv5",
+    .deploy_version = 7,
 
-    .nn_input_frame_size = 9216,
-    .raw_sample_count = 9216,
+    .nn_input_frame_size = 76800,
+    .raw_sample_count = 25600,
     .raw_samples_per_frame = 1,
-    .dsp_input_frame_size = 9216 * 1,
-    .input_width = 96,
-    .input_height = 96,
+    .dsp_input_frame_size = 25600 * 1,
+    .input_width = 160,
+    .input_height = 160,
     .input_frames = 1,
     .interval_ms = 1,
     .frequency = 0,
@@ -110,22 +110,22 @@ const ei_impulse_t impulse_1085_2 = {
     .object_detection = 1,
     .object_detection_count = 10,
     .object_detection_threshold = 0.5,
-    .object_detection_last_layer = EI_CLASSIFIER_LAST_LAYER_FOMO,
-    .fomo_output_size = 12,
+    .object_detection_last_layer = EI_CLASSIFIER_LAST_LAYER_YOLOV5,
+    .fomo_output_size = 0,
     
-    .tflite_output_features_count = 288,
+    .tflite_output_features_count = 9450,
     .learning_blocks_size = ei_learning_blocks_size,
     .learning_blocks = ei_learning_blocks,
 
     .inferencing_engine = EI_CLASSIFIER_TFLITE,
     
-    .quantized = 1,
+    .quantized = 0,
     
     .compiled = 1,
 
     .sensor = EI_CLASSIFIER_SENSOR_CAMERA,
     .fusion_string = "image",
-    .slice_size = (9216/4),
+    .slice_size = (25600/4),
     .slices_per_model_window = 4,
 
     .has_anomaly = 0,
@@ -134,6 +134,6 @@ const ei_impulse_t impulse_1085_2 = {
     .categories = ei_classifier_inferencing_categories
 };
 
-const ei_impulse_t ei_default_impulse = impulse_1085_2;
+const ei_impulse_t ei_default_impulse = impulse_213972_7;
 
 #endif // _EI_CLASSIFIER_MODEL_METADATA_H_
