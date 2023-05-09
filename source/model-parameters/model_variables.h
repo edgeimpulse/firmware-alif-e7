@@ -31,10 +31,10 @@
 
 const char* ei_classifier_inferencing_categories[] = { "face" };
 
-uint8_t ei_dsp_config_3_axes[] = { 0 };
-const uint32_t ei_dsp_config_3_axes_size = 1;
-ei_dsp_config_image_t ei_dsp_config_3 = {
-    3, // uint32_t blockId
+uint8_t ei_dsp_config_17_axes[] = { 0 };
+const uint32_t ei_dsp_config_17_axes_size = 1;
+ei_dsp_config_image_t ei_dsp_config_17 = {
+    17, // uint32_t blockId
     1, // int implementationVersion
     1, // int length of axes
     "Grayscale" // select channels
@@ -42,12 +42,12 @@ ei_dsp_config_image_t ei_dsp_config_3 = {
 
 const size_t ei_dsp_blocks_size = 1;
 ei_model_dsp_t ei_dsp_blocks[ei_dsp_blocks_size] = {
-    { // DSP block 3
+    { // DSP block 17
         9216,
         &extract_image_features,
-        (void*)&ei_dsp_config_3,
-        ei_dsp_config_3_axes,
-        ei_dsp_config_3_axes_size
+        (void*)&ei_dsp_config_17,
+        ei_dsp_config_17_axes,
+        ei_dsp_config_17_axes_size
     }
 };
 
@@ -89,11 +89,11 @@ const ei_model_performance_calibration_t ei_calibration = {
 };
 
 
-const ei_impulse_t impulse_1085_2 = {
-    .project_id = 1085,
-    .project_owner = "Edge Impulse Profiling",
-    .project_name = "fomo-96-96-faces-gray",
-    .deploy_version = 2,
+const ei_impulse_t impulse_198556_105 = {
+    .project_id = 198556,
+    .project_owner = "Demo Team",
+    .project_name = "Face detection - FOMO Alif",
+    .deploy_version = 105,
 
     .nn_input_frame_size = 9216,
     .raw_sample_count = 9216,
@@ -134,6 +134,6 @@ const ei_impulse_t impulse_1085_2 = {
     .categories = ei_classifier_inferencing_categories
 };
 
-const ei_impulse_t ei_default_impulse = impulse_1085_2;
+const ei_impulse_t ei_default_impulse = impulse_198556_105;
 
 #endif // _EI_CLASSIFIER_MODEL_METADATA_H_

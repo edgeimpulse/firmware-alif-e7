@@ -62,9 +62,11 @@ int main()
 {
     init_trigger_rx();
     hal_platform_init();
-    info("ei init begins\r\n");
-    printf("printf test.\r\n");
-    ei_printf("ei_printf test.\r\n");
+
+    ei_printf("Hello from Edge Impulse on Alif Ensemble E7\r\n"
+              "Compiled on %s %s\r\n",
+              __DATE__,
+              __TIME__);
 
     #if ARM_NPU
     arm_ethosu_npu_init();

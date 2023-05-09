@@ -51,10 +51,10 @@
 #define EI_CLASSIFIER_DATATYPE_UINT8             3
 #define EI_CLASSIFIER_DATATYPE_INT8              9
 
-#define EI_CLASSIFIER_PROJECT_ID                 1085
-#define EI_CLASSIFIER_PROJECT_OWNER              "Edge Impulse Profiling"
-#define EI_CLASSIFIER_PROJECT_NAME               "FOMO Face detection"
-#define EI_CLASSIFIER_PROJECT_DEPLOY_VERSION     2
+#define EI_CLASSIFIER_PROJECT_ID                 198556
+#define EI_CLASSIFIER_PROJECT_OWNER              "Demo Team"
+#define EI_CLASSIFIER_PROJECT_NAME               "Face detection - FOMO Alif"
+#define EI_CLASSIFIER_PROJECT_DEPLOY_VERSION     105
 #define EI_CLASSIFIER_NN_INPUT_FRAME_SIZE        9216
 #define EI_CLASSIFIER_RAW_SAMPLE_COUNT           9216
 #define EI_CLASSIFIER_RAW_SAMPLES_PER_FRAME      1
