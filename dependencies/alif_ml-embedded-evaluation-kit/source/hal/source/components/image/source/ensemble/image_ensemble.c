@@ -134,7 +134,6 @@ static void process_autogain(void)
         }
         last_requested_api_gain = desired_api_gain;
         current_api_gain = ret;
-        debug("Camera gain changed to %.3f\n", current_api_gain * 0x1p-16f);
 
         /* Check for saturation, and record it. Knowing our limits avoids
          * making pointless calls to the gain changing API.
