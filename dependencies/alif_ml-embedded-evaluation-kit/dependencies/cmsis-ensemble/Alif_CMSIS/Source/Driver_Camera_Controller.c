@@ -779,7 +779,6 @@ static int32_t CAMERAx_Initialize(CAMERA_CTRL_DEV                     *cam_ctrl,
 
   /* Call Camera Sensor specific init */
   ret = cam_sensor->Ops->Init(cam_resolution);
-//   DEBUG_PRINTF("Camera sensor init: %d\r\n", ret);
   if(ret != ARM_DRIVER_OK)
     return ret;
 
@@ -918,10 +917,6 @@ static int32_t CAMERAx_CaptureFrame(CAMERA_CTRL_DEV       *cam_ctrl,
 {
   int32_t ret = ARM_DRIVER_OK;
 
-#if (RTE_MIPI_CSI2)
-  uint32_t lp_count = 0;
-#endif
-
   if(!framebuffer_startaddr)
     return ARM_DRIVER_ERROR_PARAMETER;
 
@@ -948,17 +943,6 @@ static int32_t CAMERAx_CaptureFrame(CAMERA_CTRL_DEV       *cam_ctrl,
   ret = cam_ctrl_start(cam_ctrl);
   if(ret != ARM_DRIVER_OK)
     return ret;
-
-#if (RTE_MIPI_CSI2)
-  /*Wait till frame completes capturing and check for any error occurred while capturing*/
-  while(cam_ctrl_get_capture_status(cam_ctrl) == CAMERA_CTRL_CAPTURE_STATUS_CAPTURING)
-  {
-    if(lp_count++ < 1000000)
-      PMU_delay_loop_us(1);
-    else
-      return ARM_DRIVER_ERROR;
-  }
-#endif
 
   return ARM_DRIVER_OK;
 }
@@ -1080,6 +1064,10 @@ static int32_t CAMERAx_Control(CAMERA_CTRL_DEV       *cam_ctrl,
     case CAMERA_SENSOR_CONFIGURE:
       /* Camera Sensor configure*/
       cam_sensor_control = 1;
+      break;
+    case CAMERA_SENSOR_GAIN:
+      /* Camera Sensor gain*/
+      ret = cam_sensor->Ops->Control(control, arg);
       break;
     case CAMERA_EVENTS_CONFIGURE:
       cam_ctrl_enable_interrupt(cam_ctrl, arg);

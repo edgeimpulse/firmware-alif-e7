@@ -61,6 +61,21 @@
 // value of 100 -----------------+
 //
 
+#define CHECK_EXPOSURE
+
+#ifdef CHECK_EXPOSURE
+#define CE(...) __VA_ARGS__
+#else
+#define CE(...)
+#endif
+
+// High and low threshold values - code uses >=
+// checks, so a neutral value is >= low and < high.
+#define THRESH_LOW 32
+#define THRESH_HIGH 248
+
+uint32_t exposure_high_count, exposure_low_count;
+
 dc1394error_t
 dc1394_bayer_Simple(const uint8_t * restrict bayer, uint8_t * restrict rgb, int sx, int sy, int tile)
 {
@@ -75,6 +90,10 @@ dc1394_bayer_Simple(const uint8_t * restrict bayer, uint8_t * restrict rgb, int 
 	int start_with_green = tile == DC1394_COLOR_FILTER_GBRG
 			|| tile == DC1394_COLOR_FILTER_GRBG;
 	int i, imax, iinc;
+
+#ifdef CHECK_EXPOSURE
+	uint32_t not_low_count = 0, high_count = 0;
+#endif
 
 	if ((tile>DC1394_COLOR_FILTER_MAX)||(tile<DC1394_COLOR_FILTER_MIN))
 		return DC1394_INVALID_COLOR_FILTER;
@@ -135,6 +154,12 @@ dc1394_bayer_Simple(const uint8_t * restrict bayer, uint8_t * restrict rgb, int 
 			uint8x16x2_t rg = vld2q(bayer);
 			uint8x16x2_t gb = vld2q(bayer + bayerStep);
 			__builtin_prefetch(bayer + bayerStep + 16 * 2 * 2);
+#ifdef CHECK_EXPOSURE
+			mve_pred16_t high = vcmpcsq_m(vmaxq_x(rg.val[0], rg.val[1], p), THRESH_HIGH, p);
+			highexp = vaddq_m(highexp, highexp, 1, high);
+			mve_pred16_t not_low = vcmpcsq_m(vminq_x(rg.val[0], rg.val[1], p), THRESH_LOW, p);
+			notlowexp = vaddq_m(notlowexp, notlowexp, 1, not_low);
+#endif
 			uint8x16_t r0 = rg.val[0];
 			uint8x16_t g0 = vrhaddq_x(rg.val[1], gb.val[0], p);
 			uint8x16_t b0 = gb.val[1];
@@ -154,12 +179,21 @@ dc1394_bayer_Simple(const uint8_t * restrict bayer, uint8_t * restrict rgb, int 
 			rgb += 16 * 6;
 			pairs_to_go -= 16;
 		}
-
+        high_count = vaddvaq(high_count, highexp);
+		not_low_count = vaddvaq(not_low_count, notlowexp);
 		bayer += pairs_to_go * 2;
 		rgb += pairs_to_go * 6;
 #else
 		if (blue > 0) {
 			for (; bayer <= bayerEnd - 2; bayer += 2, rgb += 6) {
+#ifdef CHECK_EXPOSURE
+				if (bayer[0] >= THRESH_HIGH || bayer[1] >= THRESH_HIGH) {
+					high_count++;
+				}
+				if (bayer[0] >= THRESH_LOW && bayer[1] >= THRESH_LOW) {
+					not_low_count++;
+				}
+#endif
 				rgb[-1] = bayer[0];
 				rgb[0] = (bayer[1] + bayer[bayerStep] + 1) >> 1;
 				rgb[1] = bayer[bayerStep + 1];
@@ -170,6 +204,14 @@ dc1394_bayer_Simple(const uint8_t * restrict bayer, uint8_t * restrict rgb, int 
 			}
 		} else {
 			for (; bayer <= bayerEnd - 2; bayer += 2, rgb += 6) {
+#ifdef CHECK_EXPOSURE
+				if (bayer[0] >= THRESH_HIGH || bayer[1] >= THRESH_HIGH) {
+					high_count++;
+				}
+				if (bayer[0] >= THRESH_LOW && bayer[1] >= THRESH_LOW) {
+					not_low_count++;
+				}
+#endif
 				rgb[1] = bayer[0];
 				rgb[0] = (bayer[1] + bayer[bayerStep] + 1) >> 1;
 				rgb[-1] = bayer[bayerStep + 1];
@@ -195,6 +237,12 @@ dc1394_bayer_Simple(const uint8_t * restrict bayer, uint8_t * restrict rgb, int 
 		blue = -blue;
 		start_with_green = !start_with_green;
 	}
+
+#ifdef CHECK_EXPOSURE
+	/* Adjust total to be in raw pixels - we processed pairs */
+	exposure_high_count = high_count * 2;
+	exposure_low_count = (sx - 2) * (sy - 1) - not_low_count * 2;
+#endif
 
 	DEBUG_PRINTF("\r\n\r\n >>> dc1394_bayer_Simple END <<< \r\n");
 	return DC1394_SUCCESS;

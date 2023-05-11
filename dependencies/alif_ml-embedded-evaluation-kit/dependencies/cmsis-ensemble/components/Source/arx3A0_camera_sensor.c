@@ -111,7 +111,7 @@ static int32_t ARX3A0_Bulk_Write_Reg(const ARX3A0_REG arx3A0_reg[],
 		ret = ARX3A0_WRITE_REG(arx3A0_reg[i].reg_addr, arx3A0_reg[i].reg_value, \
 				reg_size);
 		if(ret != ARM_DRIVER_OK)
-			return ARM_DRIVER_ERROR;
+			return ret;
 	}
 
 	return ARM_DRIVER_OK;
@@ -150,31 +150,31 @@ static int32_t ARX3A0_Camera_Hard_Reseten(void)
 
 	ret = GPIO_Driver_CAM->Initialize(RTE_ARX3A0_CAMERA_RESET_PIN_NO,NULL);
 	if(ret != ARM_DRIVER_OK)
-		return ARM_DRIVER_ERROR;
+		return ret;
 
 	ret = GPIO_Driver_CAM->PowerControl(RTE_ARX3A0_CAMERA_RESET_PIN_NO,  ARM_POWER_FULL);
 	if(ret != ARM_DRIVER_OK)
-		return ARM_DRIVER_ERROR;
+		return ret;
 
 	ret = GPIO_Driver_CAM->SetDirection(RTE_ARX3A0_CAMERA_RESET_PIN_NO, GPIO_PIN_DIRECTION_OUTPUT);
 	if(ret != ARM_DRIVER_OK)
-		return ARM_DRIVER_ERROR;
+		return ret;
 
 	ret = GPIO_Driver_CAM->SetValue(RTE_ARX3A0_CAMERA_RESET_PIN_NO, GPIO_PIN_OUTPUT_STATE_HIGH);
 	if(ret != ARM_DRIVER_OK)
-		return ARM_DRIVER_ERROR;
+		return ret;
 
 	ARX3A0_DELAY_uSEC(2000);
 
 	ret = GPIO_Driver_CAM->SetValue(RTE_ARX3A0_CAMERA_RESET_PIN_NO, GPIO_PIN_OUTPUT_STATE_LOW);
 	if(ret != ARM_DRIVER_OK)
-		return ARM_DRIVER_ERROR;
+		return ret;
 
 	ARX3A0_DELAY_uSEC(2000);
 
 	ret = GPIO_Driver_CAM->SetValue(RTE_ARX3A0_CAMERA_RESET_PIN_NO, GPIO_PIN_OUTPUT_STATE_HIGH);
 	if(ret != ARM_DRIVER_OK)
-		return ARM_DRIVER_ERROR;
+		return ret;
 
 	ARX3A0_DELAY_uSEC(100000);
 
@@ -193,12 +193,12 @@ static int32_t ARX3A0_Camera_Soft_Reseten(void)
 
 	ret = ARX3A0_WRITE_REG(ARX3A0_SOFTWARE_RESET_REGISTER, 0x01, 1);
 	if(ret != ARM_DRIVER_OK)
-		return ARM_DRIVER_ERROR;
+		return ret;
 
 	/* @Observation: more delay is required for Camera Sensor
 	 *               to setup after Soft Reset.
 	 */
-	ARX3A0_DELAY_uSEC(100000);
+	ARX3A0_DELAY_uSEC(1000);
 
 	return ARM_DRIVER_OK;
 }
@@ -218,16 +218,13 @@ static int32_t ARX3A0_Camera_Soft_Reseten(void)
 static int32_t ARX3A0_Camera_Cfg(ARM_CAMERA_RESOLUTION cam_resolution)
 {
 	uint32_t total_num     = 0;
-	int32_t  ret = 0;
 
 	/* Configure Camera Sensor Resolution */
 	if(cam_resolution == CAMERA_RESOLUTION_560x560)
 	{
 		/* Camera Sensor Resolution: 560x560(WxH) */
 		total_num = (sizeof(arx3a0_560_regs) / sizeof(ARX3A0_REG));
-		ret = ARX3A0_Bulk_Write_Reg(arx3a0_560_regs, total_num, 2);
-		if(ret != ARM_DRIVER_OK)
-			return ARM_DRIVER_ERROR;
+		return ARX3A0_Bulk_Write_Reg(arx3a0_560_regs, total_num, 2);
 	}
 	else
 	{
@@ -235,6 +232,103 @@ static int32_t ARX3A0_Camera_Cfg(ARM_CAMERA_RESOLUTION cam_resolution)
 	}
 
 	return ARM_DRIVER_OK;
+}
+
+/**
+  \fn           int32_t ARX3A0_Camera_Gain(uint32_t gain)
+  \brief        Set camera gain
+  this function will
+  - configure Camera Sensor gain as per input parameter.
+  (currently supports only analogue gain control)
+  \param[in]    gain    : gain value * 65536 (so 1.0 gain = 65536); 0 to read
+
+  \return       \ref actual gain
+  */
+static int32_t ARX3A0_Camera_Gain(const uint32_t gain)
+{
+	uint32_t digital_gain;
+	uint32_t fine_gain = gain;
+	uint32_t coarse_gain;
+	if (gain != 0)
+	{
+		/* From the Design Guide:
+		 *
+		 * Total Gain = (R0x305E[0:3]/16+1)*2^R0x0305E[4:6]*(R0x305E[7:15]/64)
+		 *
+		 * (Register guide is misleading, no doubt in part due to the backwards-
+		 * compatibility analogue gain API in register 0x3028).
+		 *
+		 * First clamp analogue gain, using digital gain to get more if
+		 * necessary. Otherwise digital gain is used to fine adjust.
+		 */
+		if (gain < 0x10000)
+		{
+			/* Minimum gain is 1.0 */
+			fine_gain = 0x10000;
+		}
+		else if (gain > 0x80000)
+		{
+			/* Maximum analogue gain is 8.0 */
+			fine_gain = 0x80000;
+		}
+
+		/*
+		 * First get coarse analogue power of two, leaving fine gain in range [0x10000,0x1FFFF]
+		 */
+		coarse_gain = 0;
+		while (fine_gain >= 0x20000)
+		{
+			coarse_gain++;
+			fine_gain /= 2;
+		}
+
+		/* And we then have 16 steps of fine gain. Round down here, and
+		 * we tune with digital gain >= 1.0
+		 */
+		fine_gain = (fine_gain - 0x10000) / 0x1000;
+
+		/* Use digital gain to extend gain beyond the analogue limits of
+		 * x1 to x8, or to fine-tune within that range.
+		 *
+		 * We don't let digital gain go below 1.0 - it just loses information,
+		 * and clamping it lets an auto-gain controller see that we are
+		 * unable to improve exposure by such lowering. Another camera might
+		 * be able to usefully set gain to <1.0, so a controller could try it.
+		 *
+		 * (When we're fine tuning, digital gain is always >=1.0, because we
+		 * round down analogue gain, so it can only go below 1.0 by the user
+		 * requesting total gain < 1.0).
+		 */
+		uint32_t resulting_analogue_gain = ((fine_gain + 16) << coarse_gain) * 0x1000;
+		digital_gain = (64 * gain + (resulting_analogue_gain / 2)) / resulting_analogue_gain;
+		if (digital_gain > 0x1FF)
+		{
+			/* Maximum digital gain is just under 8.0 (limited by register size) */
+			digital_gain = 0x1FF;
+		}
+		else if (digital_gain < 64)
+		{
+			/* Digital gain >= 1.0, as per discussion above */
+			digital_gain = 64;
+		}
+		int32_t ret = ARX3A0_WRITE_REG(0x305e, (digital_gain << 7) | (coarse_gain << 4) | fine_gain, 2);
+		if (ret != 0)
+			return ret;
+	}
+	else
+	{
+		uint32_t reg_value;
+		int32_t ret = ARX3A0_READ_REG(0x305e, &reg_value, 2);
+		if (ret != 0)
+			return ret;
+
+		digital_gain = reg_value >> 7;
+		coarse_gain = (reg_value >> 4) & 7;
+		fine_gain = reg_value & 0xF;
+	}
+
+	// Fixed point factors of 16 and 64 in registers, so multiply by 64 to get our *0x10000 scale
+	return ((fine_gain + 16) << coarse_gain) * digital_gain * 64;
 }
 
 /**
@@ -259,7 +353,9 @@ int32_t ARX3A0_Init(ARM_CAMERA_RESOLUTION cam_resolution)
 	ARX3A0_Sensor_Clk_Src();
 
 	/*camera sensor resten*/
-	ARX3A0_Camera_Hard_Reseten();
+	ret = ARX3A0_Camera_Hard_Reseten();
+	if(ret != ARM_DRIVER_OK)
+		return ret;
 
 	/* Initialize i2c using i3c driver instance depending on
 	 *  ARX3A0 Camera Sensor specific i2c configurations
@@ -267,21 +363,18 @@ int32_t ARX3A0_Init(ARM_CAMERA_RESOLUTION cam_resolution)
 	 */
 
 	ret = camera_sensor_i2c_init(&arx3A0_camera_sensor_i2c_cnfg);
-
 	if(ret != ARM_DRIVER_OK)
-		return ARM_DRIVER_ERROR;
+		return ret;
 
 	/* Soft Reset ARX3A0 Camera Sensor */
 	ret = ARX3A0_Camera_Soft_Reseten();
-
 	if(ret != ARM_DRIVER_OK)
-		return ARM_DRIVER_ERROR;
+		return ret;
 
 	/* Read ARX3A0 Camera Sensor CHIP ID */
 	ret = ARX3A0_READ_REG(ARX3A0_CHIP_ID_REGISTER, &rcv_data, 2);
-
 	if(ret != ARM_DRIVER_OK)
-		return ARM_DRIVER_ERROR;
+		return ret;
 
 	/* Proceed only if CHIP ID is correct. */
 	if(rcv_data != ARX3A0_CHIP_ID_REGISTER_VALUE)
@@ -290,27 +383,27 @@ int32_t ARX3A0_Init(ARM_CAMERA_RESOLUTION cam_resolution)
 	/*Putting sensor in standby mode*/
 	ret = ARX3A0_WRITE_REG(ARX3A0_MODE_SELECT_REGISTER, 0x00, 1);
 	if(ret != ARM_DRIVER_OK)
-		return ARM_DRIVER_ERROR;
+		return ret;
 
 	ret = ARX3A0_READ_REG(ARX3A0_MIPI_CONFIG_REGISTER, &rcv_data, 2);
 	if(ret != ARM_DRIVER_OK)
-		return ARM_DRIVER_ERROR;
+		return ret;
 
 	ret = ARX3A0_WRITE_REG(ARX3A0_MIPI_CONFIG_REGISTER, rcv_data | (1U << 7), 2);
 	if(ret != ARM_DRIVER_OK)
-		return ARM_DRIVER_ERROR;
+		return ret;
 
 	/*start streaming*/
 	ret = ARX3A0_WRITE_REG(ARX3A0_MODE_SELECT_REGISTER, 0x01, 1);
 	if(ret != ARM_DRIVER_OK)
-		return ARM_DRIVER_ERROR;
+		return ret;
 
 	ARX3A0_DELAY_uSEC(50000);
 
 	/*stop streaming*/
 	ret = ARX3A0_WRITE_REG(ARX3A0_MODE_SELECT_REGISTER, 0x00, 1);
 	if(ret != ARM_DRIVER_OK)
-		return ARM_DRIVER_ERROR;
+		return ret;
 
 	/*Adding delay to finish streaming*/
 	ARX3A0_DELAY_uSEC(500000);
@@ -326,14 +419,8 @@ int32_t ARX3A0_Init(ARM_CAMERA_RESOLUTION cam_resolution)
   */
 int32_t ARX3A0_Start(void)
 {
-	int32_t ret = 0;
-
 	/* Start streaming */
-	ret = ARX3A0_WRITE_REG(ARX3A0_MODE_SELECT_REGISTER, 0x01, 1);
-	if(ret != ARM_DRIVER_OK)
-		return ARM_DRIVER_ERROR;
-
-	return ARM_DRIVER_OK;
+	return ARX3A0_WRITE_REG(ARX3A0_MODE_SELECT_REGISTER, 0x01, 1);
 }
 
 /**
@@ -344,14 +431,8 @@ int32_t ARX3A0_Start(void)
   */
 int32_t ARX3A0_Stop(void)
 {
-	int32_t ret = 0;
-
 	/* Suspend any stream */
-	ret = ARX3A0_WRITE_REG(ARX3A0_MODE_SELECT_REGISTER, 0x00, 1);
-	if(ret != ARM_DRIVER_OK)
-		return ARM_DRIVER_ERROR;
-
-	return ARM_DRIVER_OK;
+	return ARX3A0_WRITE_REG(ARX3A0_MODE_SELECT_REGISTER, 0x00, 1);
 }
 
 /**
@@ -363,19 +444,15 @@ int32_t ARX3A0_Stop(void)
   */
 int32_t ARX3A0_Control(uint32_t control, uint32_t arg)
 {
-	int32_t ret = 0;
-
 	switch (control)
 	{
 		case CAMERA_SENSOR_CONFIGURE:
-			ret = ARX3A0_Camera_Cfg((ARM_CAMERA_RESOLUTION)arg);
-			if(ret != ARM_DRIVER_OK)
-				return ARM_DRIVER_ERROR;
-			break;
+			return ARX3A0_Camera_Cfg((ARM_CAMERA_RESOLUTION)arg);
+		case CAMERA_SENSOR_GAIN:
+			return ARX3A0_Camera_Gain(arg);
 		default:
 			return ARM_DRIVER_ERROR_PARAMETER;
 	}
-	return ARM_DRIVER_OK;
 }
 
 /**

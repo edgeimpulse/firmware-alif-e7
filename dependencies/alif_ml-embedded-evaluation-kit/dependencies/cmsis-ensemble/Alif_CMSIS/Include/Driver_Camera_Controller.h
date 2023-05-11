@@ -34,6 +34,7 @@ extern "C"
 #define CAMERA_CONTROLLER_SOFTRESET                                (0x01UL)    ///< CAMERA CONTROLLER Software Reset; arg: 0=disable, 1=enable
 #define CAMERA_SENSOR_CONFIGURE                                    (0x02UL)    ///< CAMERA SENSOR configure; arg: 0=disable, 1=enable
 #define CAMERA_EVENTS_CONFIGURE                                    (0x03UL)    ///< CAMERA EVENTS configure; arg: list of events to enable (ARM_CAMERA_CONTROLLER_EVENT_..)
+#define CAMERA_SENSOR_GAIN                                         (0x04UL)    ///< CAMERA SENSOR gain set; arg: 0x10000 * gain, 0=read only. Returns current/updated gain if no error.
 
 /****** CAMERA_CONTROLLER Event *****/
 #define ARM_CAMERA_CONTROLLER_EVENT_CAMERA_CAPTURE_STOPPED         (1UL << 0)  ///< Camera Capture Stopped
