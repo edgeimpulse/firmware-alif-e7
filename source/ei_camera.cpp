@@ -35,10 +35,15 @@ class EiCameraAlif : public EiCamera
 
     virtual bool init(uint16_t width, uint16_t height) override
     {
-        int err = hal_image_init();
-        if (0 != err) {
-            ei_printf("ERROR: hal_image_init failed with error: %d\n", err);
-            return false;
+        static bool camera_ready = false;
+
+        if(camera_ready == false) {
+            int err = hal_image_init();
+            if (0 != err) {
+                ei_printf("ERROR: hal_image_init failed with error: %d\n", err);
+                return false;
+            }
+            camera_ready = true;
         }
         ei_device_snapshot_resolutions_t rq_res;
 
