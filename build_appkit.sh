@@ -18,5 +18,6 @@ cmake \
 -DLOG_LEVEL=LOG_LEVEL_DEBUG ..
 
 make -j
+truncate --size %16 bin/sectors/mram.bin
 
 echo "Building standalone classifier OK"

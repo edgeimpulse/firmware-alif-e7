@@ -60,6 +60,7 @@ static int audio_current_rec_buf;
 
 static int32_t current_dc = 0;
 static float current_gain = MAX_GAIN;
+static bool auto_gain = true;
 
 static int16_t * restrict user_ptr;
 static int user_length;
@@ -240,6 +241,18 @@ static void convert_to_s16_from_f16_with_gain(void *ptr, int length, float16_t g
     }
 }
 
+
+void set_audio_gain(float gain_db)
+{
+    if (isnan(gain_db)) {
+        auto_gain = true;
+    } else {
+        auto_gain = false;
+        current_gain = gain_db;
+    }
+}
+
+
 /* Reads the input in float16 format
  * Adjusts gain up or down, attempting to get full-scale input
  * Applies
@@ -252,18 +265,19 @@ void audio_preprocessing(int16_t *audio, int samples)
     arm_mean_f16(audio_fp, samples, &audio_mean);
     arm_absmax_no_idx_f16(audio_fp, samples, &audio_absmax);
     //if (audio_absmax == INT16_MIN) audio_absmax = INT16_MAX; // CMSIS-DSP issue #66
-    // printf("Original sample stats: absmax = %ld, mean = %ld\n", lround(32768*audio_absmax), lround(32768*audio_mean));
+    printf("Original sample stats: absmax = %ld, mean = %ld\n", lround(32768*audio_absmax), lround(32768*audio_mean));
 
-    // Rescale to full range  while converting to integer
-    float new_gain = fmin(1.0f / audio_absmax, MAX_GAIN);
-    // Reduce gain immediately if necessary to avoid clipping, or increase slowly
-    current_gain = fmin(new_gain, current_gain * MAX_GAIN_INC_PER_STRIDE);
-
+    if (auto_gain) {
+        // Rescale to full range  while converting to integer
+        float new_gain = fmin(1.0f / audio_absmax, MAX_GAIN);
+        // Reduce gain immediately if necessary to avoid clipping, or increase slowly
+        current_gain = fmin(new_gain, current_gain * MAX_GAIN_INC_PER_STRIDE);
+    }
     convert_to_s16_from_f16_with_gain(audio, samples, current_gain);
 
     q15_t audio_mean_q15, audio_absmax_q15;
     arm_mean_q15(audio, samples, &audio_mean_q15);
     arm_absmax_no_idx_q15(audio, samples, &audio_absmax_q15);
     if (audio_absmax_q15 == INT16_MIN) audio_absmax_q15 = INT16_MAX; // CMSIS-DSP issue #66
-    // printf("Normalized sample stats: absmax = %d, mean = %d (gain = %.0f dB)\n", audio_absmax_q15, audio_mean_q15, 20 * log10f(current_gain) );
+    printf("Normalized sample stats: absmax = %d, mean = %d (gain = %.0f dB)\n", audio_absmax_q15, audio_mean_q15, 20 * log10f(current_gain) );
 }
