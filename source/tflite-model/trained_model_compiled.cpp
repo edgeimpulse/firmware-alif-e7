@@ -212,7 +212,7 @@ static void init_tflite_eval_tensor(size_t i, TfLiteEvalTensor *tensor) {
 
 static void* overflow_buffers[EI_MAX_OVERFLOW_BUFFER_COUNT];
 static size_t overflow_buffers_ix = 0;
-static void * AllocatePersistentBuffer(struct TfLiteContext* ctx,
+static void * AllocatePersistentBufferImpl(struct TfLiteContext* ctx,
                                        size_t bytes) {
   void *ptr;
   if (current_location - bytes < tensor_boundary) {
@@ -247,7 +247,7 @@ typedef struct {
 static scratch_buffer_t scratch_buffers[EI_MAX_SCRATCH_BUFFER_COUNT];
 static size_t scratch_buffers_ix = 0;
 
-static TfLiteStatus RequestScratchBufferInArena(struct TfLiteContext* ctx, size_t bytes,
+static TfLiteStatus RequestScratchBufferInArenaImpl(struct TfLiteContext* ctx, size_t bytes,
                                                 int* buffer_idx) {
   if (scratch_buffers_ix > EI_MAX_SCRATCH_BUFFER_COUNT - 1) {
     ei_printf("ERR: Failed to allocate scratch buffer of size %d, reached EI_MAX_SCRATCH_BUFFER_COUNT\n",
@@ -258,7 +258,7 @@ static TfLiteStatus RequestScratchBufferInArena(struct TfLiteContext* ctx, size_
   scratch_buffer_t b;
   b.bytes = bytes;
 
-  b.ptr = AllocatePersistentBuffer(ctx, b.bytes);
+  b.ptr = AllocatePersistentBufferImpl(ctx, b.bytes);
   if (!b.ptr) {
     ei_printf("ERR: Failed to allocate scratch buffer of size %d\n",
       (int)bytes);
@@ -273,7 +273,7 @@ static TfLiteStatus RequestScratchBufferInArena(struct TfLiteContext* ctx, size_
   return kTfLiteOk;
 }
 
-static void* GetScratchBuffer(struct TfLiteContext* ctx, int buffer_idx) {
+static void* GetScratchBufferImpl(struct TfLiteContext* ctx, int buffer_idx) {
   if (buffer_idx > (int)scratch_buffers_ix) {
     return NULL;
   }
@@ -291,7 +291,7 @@ static void ResetTensors() {
   }
 }
 
-static TfLiteTensor* GetTensor(const struct TfLiteContext* context,
+static TfLiteTensor* GetTensorImpl(const struct TfLiteContext* context,
                                int tensor_idx) {
 
   for (size_t ix = 0; ix < MAX_TFL_TENSOR_COUNT; ix++) {
@@ -312,7 +312,7 @@ static TfLiteTensor* GetTensor(const struct TfLiteContext* context,
   return nullptr;
 }
 
-static TfLiteEvalTensor* GetEvalTensor(const struct TfLiteContext* context,
+static TfLiteEvalTensor* GetEvalTensorImpl(const struct TfLiteContext* context,
                                        int tensor_idx) {
 
   for (size_t ix = 0; ix < MAX_TFL_EVAL_COUNT; ix++) {
@@ -333,6 +333,36 @@ static TfLiteEvalTensor* GetEvalTensor(const struct TfLiteContext* context,
   return nullptr;
 }
 
+class EonMicroContext : public MicroContext {
+ public:
+  EonMicroContext(): MicroContext(nullptr, nullptr, nullptr) { }
+
+  void* AllocatePersistentBuffer(size_t bytes) {
+    return AllocatePersistentBufferImpl(nullptr, bytes);
+  };
+  TfLiteStatus RequestScratchBufferInArena(size_t bytes,
+                                           int* buffer_index) {
+  return RequestScratchBufferInArenaImpl(nullptr, bytes, buffer_index);
+  }
+  void* GetScratchBuffer(int buffer_index) {
+    return GetScratchBufferImpl(nullptr, buffer_index);
+  }
+
+  TfLiteTensor* AllocateTempTfLiteTensor(int tensor_index) {
+    return GetTensorImpl(nullptr, tensor_index);
+  }
+  void DeallocateTempTfLiteTensor(TfLiteTensor* tensor) {
+    return;
+  }
+  bool IsAllTempTfLiteTensorDeallocated() {
+    return true;
+  }
+
+  TfLiteEvalTensor* GetEvalTensor(int tensor_index) {
+    return GetEvalTensorImpl(nullptr, tensor_index);
+  }
+};
+
 } // namespace
 
 TfLiteStatus trained_model_init( void*(*alloc_fnc)(size_t,size_t) ) {
@@ -347,11 +377,14 @@ TfLiteStatus trained_model_init( void*(*alloc_fnc)(size_t,size_t) ) {
 #endif
   tensor_boundary = tensor_arena;
   current_location = tensor_arena + kTensorArenaSize;
-  ctx.AllocatePersistentBuffer = &AllocatePersistentBuffer;
-  ctx.RequestScratchBufferInArena = &RequestScratchBufferInArena;
-  ctx.GetScratchBuffer = &GetScratchBuffer;
-  ctx.GetTensor = &GetTensor;
-  ctx.GetEvalTensor = &GetEvalTensor;
+
+  EonMicroContext micro_context_;
+  ctx.impl_ = static_cast<void*>(&micro_context_);
+  ctx.AllocatePersistentBuffer = &AllocatePersistentBufferImpl;
+  ctx.RequestScratchBufferInArena = &RequestScratchBufferInArenaImpl;
+  ctx.GetScratchBuffer = &GetScratchBufferImpl;
+  ctx.GetTensor = &GetTensorImpl;
+  ctx.GetEvalTensor = &GetEvalTensorImpl;
   ctx.tensors_size = 6;
   for (size_t i = 0; i < 6; ++i) {
     TfLiteTensor tensor;
@@ -393,7 +426,7 @@ if (registrations[nodeData[i].used_op_index].init) {
 }
 
 static const int inTensorIndices[] = {
-  5, 
+  5,
 };
 TfLiteStatus trained_model_input(int index, TfLiteTensor *tensor) {
   init_tflite_tensor(inTensorIndices[index], tensor);
@@ -401,7 +434,7 @@ TfLiteStatus trained_model_input(int index, TfLiteTensor *tensor) {
 }
 
 static const int outTensorIndices[] = {
-  0, 
+  0,
 };
 TfLiteStatus trained_model_output(int index, TfLiteTensor *tensor) {
   init_tflite_tensor(outTensorIndices[index], tensor);
@@ -891,7 +924,7 @@ if (registrations[nodeData[i].used_op_index].init) {
 }
 
 static const int inTensorIndices[] = {
-  5, 
+  5,
 };
 TfLiteStatus trained_model_input(int index, TfLiteTensor *tensor) {
   init_tflite_tensor(inTensorIndices[index], tensor);
@@ -899,7 +932,7 @@ TfLiteStatus trained_model_input(int index, TfLiteTensor *tensor) {
 }
 
 static const int outTensorIndices[] = {
-  0, 
+  0,
 };
 TfLiteStatus trained_model_output(int index, TfLiteTensor *tensor) {
   init_tflite_tensor(outTensorIndices[index], tensor);

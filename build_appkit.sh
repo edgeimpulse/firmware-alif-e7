@@ -17,6 +17,7 @@ cmake \
 -DCMAKE_BUILD_TYPE=Release \
 -DLOG_LEVEL=LOG_LEVEL_DEBUG ..
 
-make -j
+make -j $((`nproc` / 2))
+truncate --size %16 bin/sectors/mram.bin
 
 echo "Building standalone classifier OK"

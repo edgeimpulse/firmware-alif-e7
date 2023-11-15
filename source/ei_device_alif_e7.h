@@ -28,7 +28,7 @@
 #include "firmware-sdk-alif/ei_device_memory.h"
 
 /* Const defines ----------------------------------------------------------- */
-#define EI_DEVICE_N_RESOLUTIONS 3
+#define EI_DEVICE_N_RESOLUTIONS 5
 
 /* Supported baud rates --------------------------------------------------- */
 #define DEFAULT_BAUD 115200

@@ -100,12 +100,16 @@ bool EiDeviceAlif::read_encode_send_sample_buffer(size_t address, size_t length)
 bool EiDeviceAlif::get_snapshot_list(const ei_device_snapshot_resolutions_t **snapshot_list, size_t *snapshot_list_size,
                                          const char **color_depth)
 {
-    snapshot_resolutions[0].width = 32;
-    snapshot_resolutions[0].height = 32;
+    snapshot_resolutions[0].width = 64;
+    snapshot_resolutions[0].height = 64;
     snapshot_resolutions[1].width = 96;
     snapshot_resolutions[1].height = 96;
     snapshot_resolutions[2].width = 160;
     snapshot_resolutions[2].height = 160;
+    snapshot_resolutions[3].width = 320;
+    snapshot_resolutions[3].height = 320;
+    snapshot_resolutions[4].width = 480;
+    snapshot_resolutions[4].height = 480;
 
     *snapshot_list      = snapshot_resolutions;
     *snapshot_list_size = EI_DEVICE_N_RESOLUTIONS;
